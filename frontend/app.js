@@ -11,13 +11,6 @@ let state = {
 window.addEventListener('DOMContentLoaded', () => {
     loadLocalState();
 
-    // Listen for changes from the other tab (mocking live DB sync)
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'studyLinkTasks' || e.key === 'studyLinkPunishments' || e.key === 'studyLinkPartnerId') {
-            loadLocalState();
-        }
-    });
-
     if (state.currentUser && state.partnerId) {
         enterDashboard();
     } else if (state.currentUser) {
@@ -367,6 +360,9 @@ document.getElementById('form-join-couple').addEventListener('submit', async (e)
 const logoutFunction = () => {
     localStorage.removeItem('studyLinkUser');
     localStorage.removeItem('studyLinkPartnerId');
+    localStorage.removeItem('studyLinkTasks');
+    localStorage.removeItem('studyLinkPunishments');
+    // Also clear standard user DB if needed or just reload
     location.reload();
 };
 
