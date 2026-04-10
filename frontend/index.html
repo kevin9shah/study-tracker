@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,19 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="app-background">
         <div class="blob1"></div>
         <div class="blob2"></div>
     </div>
-    
+
+    <!-- Top Left Decoration -->
+    <div class="top-left-decor">
+        <span>🪶</span>
+        <span>📷</span>
+    </div>
+
     <!-- PAGE: SETUP -->
     <div id="page-setup" class="container glass-panel active">
         <header>
@@ -22,10 +30,12 @@
 
         <div id="step-auth" class="setup-block active">
             <div class="tabs" style="display:flex; margin-bottom:1rem; border-bottom:1px solid var(--glass-border);">
-                <button id="tab-login" class="tab-btn active" style="flex:1; background:transparent; border:none; border-bottom:2px solid var(--primary); padding:0.8rem; font-weight:600; color:var(--text-main);">Login</button>
-                <button id="tab-register" class="tab-btn" style="flex:1; background:transparent; border:none; padding:0.8rem; font-weight:600; color:var(--text-muted);">Register</button>
+                <button id="tab-login" class="tab-btn active"
+                    style="flex:1; background:transparent; border:none; border-bottom:2px solid var(--primary); padding:0.8rem; font-weight:600; color:var(--text-main);">Login</button>
+                <button id="tab-register" class="tab-btn"
+                    style="flex:1; background:transparent; border:none; padding:0.8rem; font-weight:600; color:var(--text-muted);">Register</button>
             </div>
-            
+
             <!-- Login Form -->
             <form id="form-login">
                 <input type="email" id="login-email" placeholder="Email" required>
@@ -47,9 +57,11 @@
         <div id="step-couple" class="setup-block">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
                 <h2 style="margin:0;">2. Link Partner</h2>
-                <button id="btn-logout-setup" class="danger-btn" style="padding: 0.4rem 0.8rem; font-size:0.9rem;">Logout</button>
+                <button id="btn-logout-setup" class="danger-btn"
+                    style="padding: 0.4rem 0.8rem; font-size:0.9rem;">Logout</button>
             </div>
-            <p>Your ID: <strong id="lbl-my-id"></strong>. Ask your partner to generate a code, or generate one yourself.</p>
+            <p>Your ID: <strong id="lbl-my-id"></strong>. Ask your partner to generate a code, or generate one yourself.
+            </p>
             <div class="flex-row">
                 <div class="card">
                     <button id="btn-create-couple" class="primary-btn full-width">Generate Code</button>
@@ -64,6 +76,11 @@
                 </div>
             </div>
             <button id="btn-enter-dashboard" class="success-btn full-width mt-20 display-none">Enter Dashboard</button>
+        </div>
+
+        <!-- Branding Footer -->
+        <div id="login-footer" class="footer-branding">
+            Made by Kevin Shah
         </div>
     </div>
 
@@ -105,7 +122,7 @@
                     <h4>My Missed Deadlines</h4>
                     <div id="my-missed-list" class="list-wrapper"></div>
                 </div>
-                
+
                 <div class="punishment-section">
                     <h4>Punishments Dictated by Partner</h4>
                     <div id="my-punishment-list" class="list-wrapper"></div>
@@ -138,7 +155,7 @@
                     <p class="small-text">You can assign a punishment if they missed these.</p>
                     <div id="partner-missed-list" class="list-wrapper"></div>
                 </div>
-                
+
                 <div class="punishment-section">
                     <h4>Punishments You Assigned</h4>
                     <div id="partner-punishment-list" class="list-wrapper"></div>
@@ -164,7 +181,8 @@
                     <input type="datetime-local" id="t-deadline" required style="flex:2;">
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                    <button type="button" class="danger-btn" onclick="document.getElementById('modal-task').style.display='none'">Cancel</button>
+                    <button type="button" class="danger-btn"
+                        onclick="document.getElementById('modal-task').style.display='none'">Cancel</button>
                     <button type="submit" class="success-btn">Create & Sync</button>
                 </div>
             </form>
@@ -180,7 +198,8 @@
                 <input type="hidden" id="p-task-id">
                 <input type="text" id="p-title" placeholder="e.g. Wash the dishes for a week" required>
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                    <button type="button" class="danger-btn" onclick="document.getElementById('modal-punishment').style.display='none'">Cancel</button>
+                    <button type="button" class="danger-btn"
+                        onclick="document.getElementById('modal-punishment').style.display='none'">Cancel</button>
                     <button type="submit" class="success-btn">Dictate Punishment</button>
                 </div>
             </form>
@@ -189,4 +208,5 @@
 
     <script src="app.js"></script>
 </body>
+
 </html>

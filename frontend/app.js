@@ -3,6 +3,7 @@ const API_BASE = "https://study-tracker-o508.onrender.com";
 let state = {
     currentUser: null,
     partnerId: null,
+    partnerName: null, // New field for personalization
     tasks: [],
     punishments: []
 };
@@ -44,17 +45,20 @@ const loadLocalState = () => {
     const pun = localStorage.getItem('studyLinkPunishments');
     if (pun) state.punishments = JSON.parse(pun);
 
+    const pName = localStorage.getItem('studyLinkPartnerName');
+    if (pName) state.partnerName = pName;
+
     if (document.getElementById('page-dashboard').classList.contains('active')) {
         renderDashboard();
     } else if (state.currentUser && state.partnerId) {
         enterDashboard();
     }
-    
+
     if (state.currentUser) {
         fetchTasks();
         fetchPunishments();
     }
-    
+
     // Auto-poll if we are stuck on the setup/couple page without a partner
     if (state.currentUser && !state.partnerId) {
         startCoupleStatusPolling();
@@ -67,7 +71,7 @@ const fetchTasks = async () => {
         const res1 = await fetch(`${API_BASE}/deadline/${state.currentUser.id}`);
         const myTasks = await res1.json();
         console.log("My Tasks from DB:", myTasks);
-        
+
         const res2 = await fetch(`${API_BASE}/deadline/${state.partnerId}`);
         const partnerTasks = await res2.json();
         console.log("Partner ID:", state.partnerId, "Partner Tasks from DB:", partnerTasks);
@@ -107,10 +111,12 @@ const startCoupleStatusPolling = () => {
         try {
             const res = await fetch(`${API_BASE}/couple/status/${state.currentUser.id}`);
             const data = await res.json();
-            
+
             if (data.linked) {
                 state.partnerId = data.partner_id;
+                state.partnerName = data.partner_name;
                 localStorage.setItem('studyLinkPartnerId', state.partnerId);
+                localStorage.setItem('studyLinkPartnerName', state.partnerName || "Partner");
                 clearInterval(window.coupleStatusInterval);
                 delete window.coupleStatusInterval;
                 enterDashboard();
@@ -127,7 +133,7 @@ const fetchPunishments = async () => {
         // Fetch punishments for me
         const res1 = await fetch(`${API_BASE}/punishment/${state.currentUser.id}`);
         const myPuns = await res1.json();
-        
+
         // Fetch punishments for partner
         const res2 = await fetch(`${API_BASE}/punishment/${state.partnerId}`);
         const partnerPuns = await res2.json();
@@ -149,7 +155,7 @@ const fetchPunishments = async () => {
                 status: p.status
             }))
         ];
-        
+
         state.punishments = allPuns;
         savePunishments();
         renderDashboard();
@@ -348,7 +354,9 @@ document.getElementById('form-join-couple').addEventListener('submit', async (e)
         // We know couple info from response
         if (data.couple) {
             state.partnerId = data.couple.uid1 == state.currentUser.id ? data.couple.uid2 : data.couple.uid1;
+            state.partnerName = data.partner_name || "Partner";
             localStorage.setItem('studyLinkPartnerId', state.partnerId);
+            localStorage.setItem('studyLinkPartnerName', state.partnerName);
         }
 
         setTimeout(() => enterDashboard(), 1000);
@@ -525,6 +533,19 @@ document.getElementById('form-assign-punish').addEventListener('submit', async (
 const renderDashboard = () => {
     if (!state.currentUser) return;
 
+    // Personalized Headings
+    const myName = state.currentUser.name || "Me";
+    const partnerName = state.partnerName || "Partner";
+
+    document.getElementById('my-board-title').innerText = `${myName}'s Tracker`;
+    document.getElementById('partner-board-title').innerText = `${partnerName}'s Tracker`;
+
+    document.getElementById('my-missed-title').innerText = `${myName}'s Missed Deadlines`;
+    document.getElementById('partner-missed-title').innerText = `${partnerName}'s Missed Deadlines`;
+
+    document.getElementById('my-punishment-title').innerText = `Punishments for ${myName}`;
+    document.getElementById('partner-punishment-title').innerText = `Punishments for ${partnerName}`;
+
     const myTBody = document.getElementById('my-tasks-body');
     const partnerTBody = document.getElementById('partner-tasks-body');
 
@@ -585,7 +606,7 @@ const renderDashboard = () => {
         div.className = 'list-item';
 
         const isMine = p.assignerId === state.currentUser.id;
-        
+
         let actionBtn = "";
         if (isMine) {
             if (p.status === 'completed') {
@@ -595,8 +616,8 @@ const renderDashboard = () => {
             }
         }
 
-        const statusLabel = p.status === 'completed' 
-            ? `<span style="color:var(--success)">Completed ✅</span>` 
+        const statusLabel = p.status === 'completed'
+            ? `<span style="color:var(--success)">Completed ✅</span>`
             : `<span style="color:var(--text-muted)">Assigned</span>`;
 
         div.innerHTML = `
