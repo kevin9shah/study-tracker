@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8000";
+const API_BASE = "https://study-tracker-o508.onrender.com";
 
 let state = {
     currentUser: null,
