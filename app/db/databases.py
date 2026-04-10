@@ -7,7 +7,10 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-engine = create_engine(DATABASE_URL)
+from sqlalchemy import create_engine
+import os
+
+engine = create_engine(os.getenv("DATABASE_URL"))
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
