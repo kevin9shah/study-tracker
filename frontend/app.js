@@ -425,7 +425,7 @@ document.getElementById('form-task').addEventListener('submit', async (e) => {
         // 3. Deadline
         await fetch(`${API_BASE}/deadline/`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: state.currentUser.id, chapter_id: chapId, deadline_time: tDeadline.toISOString(), status: 'active' })
+            body: JSON.stringify({ user_id: state.currentUser.id, chapter_id: chapId, deadline_time: tDeadline.toISOString(), status: 'pending' })
         });
 
         // Save local
@@ -542,7 +542,7 @@ const renderDashboard = () => {
     state.tasks.forEach(t => {
         const dStr = new Date(t.deadline).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-        if (t.status === 'pending' || t.status === 'completed') {
+        if (t.status === 'pending' || t.status === 'completed' || t.status === 'active') {
             const tr = document.createElement('tr');
             if (t.status === 'completed') tr.className = 'completed-row';
 
