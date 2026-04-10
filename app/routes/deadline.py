@@ -5,6 +5,7 @@ from app.models.user import User
 from app.models.deadline import Deadline
 
 from app.models.chapter import Chapter
+from app.models.subject import Subject
 from sqlalchemy.orm import Session
 from app.db.databases import get_db
 
@@ -37,9 +38,10 @@ def create_deadline(deadline : DeadlineCreate, db : Session = Depends(get_db)):
 
 @router.get("/{user_id}")
 def get_user_deadlines(user_id: int, db: Session = Depends(get_db)):
-    results = db.query(Deadline, Chapter, Subject).join(
+    # Use outer joins in case some metadata is missing
+    results = db.query(Deadline, Chapter, Subject).outerjoin(
         Chapter, Deadline.chapter_id == Chapter.id
-    ).join(
+    ).outerjoin(
         Subject, Chapter.subject_id == Subject.id
     ).filter(Deadline.user_id == user_id).all()
     
@@ -49,9 +51,9 @@ def get_user_deadlines(user_id: int, db: Session = Depends(get_db)):
             "id": deadline.id,
             "user_id": deadline.user_id,
             "chapter_id": deadline.chapter_id,
-            "subject": subject.name,
-            "chapter_number": chapter.chapter_number,
-            "chapter_name": chapter.subject, # Chapter model uses 'subject' field for name? Wait let me check
+            "subject": subject.name if subject else "Unknown Subject",
+            "chapter_number": chapter.chapter_number if chapter else 0,
+            "chapter_name": chapter.name if (chapter and chapter.name) else (f"Chapter {chapter.chapter_number}" if chapter else "Unknown Chapter"),
             "deadline_time": deadline.deadline_time,
             "status": deadline.status
         })

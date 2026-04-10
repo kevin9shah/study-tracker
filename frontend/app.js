@@ -73,9 +73,11 @@ const fetchTasks = async () => {
     try {
         const res1 = await fetch(`${API_BASE}/deadline/${state.currentUser.id}`);
         const myTasks = await res1.json();
+        console.log("My Tasks from DB:", myTasks);
         
         const res2 = await fetch(`${API_BASE}/deadline/${state.partnerId}`);
         const partnerTasks = await res2.json();
+        console.log("Partner ID:", state.partnerId, "Partner Tasks from DB:", partnerTasks);
 
         // Map backend tasks to frontend state format
         const mapTask = (t) => ({
@@ -89,7 +91,9 @@ const fetchTasks = async () => {
             status: t.status
         });
 
-        state.tasks = [...myTasks.map(mapTask), ...partnerTasks.map(mapTask)];
+        const allTasks = [...myTasks.map(mapTask), ...partnerTasks.map(mapTask)];
+        console.log("Total mapped tasks:", allTasks);
+        state.tasks = allTasks;
         saveTasks();
         renderDashboard();
     } catch (err) {

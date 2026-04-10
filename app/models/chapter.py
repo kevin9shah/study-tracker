@@ -10,6 +10,7 @@ class Chapter(Base):
 
     subject_id = Column(Integer, ForeignKey("subjects.id"), nullable=False)
     chapter_number = Column(Integer, nullable=False)
+    name = Column(String(200), nullable=True) # Added to store chapter names
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

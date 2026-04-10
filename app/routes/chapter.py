@@ -16,7 +16,8 @@ def create_chapter(chapter : ChapterCreate, db : Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Subject not found")
     new_chapter = Chapter(
         subject_id = chapter.subject_id,
-        chapter_number = chapter.chapter_number
+        chapter_number = chapter.chapter_number,
+        name = chapter.subject # This is the tChapName from frontend
     )
     
     db.add(new_chapter)
