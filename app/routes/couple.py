@@ -65,3 +65,20 @@ def delete_couple(data : CoupleDelete, db : Session = Depends(get_db)):
         db.commit()
         return {"message": "Couple deleted successfully"}
     raise HTTPException(status_code=404, detail="Couple not found")
+
+@router.get("/status/{uid}")
+def get_couple_status(uid: int, db: Session = Depends(get_db)):
+    couple = db.query(Couple).filter((Couple.uid1 == uid) | (Couple.uid2 == uid)).first()
+    if not couple:
+        return {"linked": False}
+    
+    partner_id = None
+    if couple.uid1 == uid:
+        partner_id = couple.uid2
+    else:
+        partner_id = couple.uid1
+        
+    return {
+        "linked": couple.status == "active",
+        "partner_id": partner_id
+    }

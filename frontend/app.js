@@ -58,8 +58,70 @@ const loadLocalState = () => {
     }
     
     if (state.currentUser) {
+        fetchTasks();
         fetchPunishments();
     }
+    
+    // Auto-poll if we are stuck on the setup/couple page without a partner
+    if (state.currentUser && !state.partnerId) {
+        startCoupleStatusPolling();
+    }
+};
+
+const fetchTasks = async () => {
+    if (!state.currentUser || !state.partnerId) return;
+    try {
+        const res1 = await fetch(`${API_BASE}/deadline/${state.currentUser.id}`);
+        const myTasks = await res1.json();
+        
+        const res2 = await fetch(`${API_BASE}/deadline/${state.partnerId}`);
+        const partnerTasks = await res2.json();
+
+        // Map backend tasks to frontend state format
+        const mapTask = (t) => ({
+            id: t.id,
+            userId: t.user_id,
+            chapId: t.chapter_id,
+            subject: t.subject,
+            chapNum: t.chapter_number,
+            chapName: t.chapter_name || `Chapter ${t.chapter_number}`,
+            deadline: t.deadline_time,
+            status: t.status
+        });
+
+        state.tasks = [...myTasks.map(mapTask), ...partnerTasks.map(mapTask)];
+        saveTasks();
+        renderDashboard();
+    } catch (err) {
+        console.error("Error fetching tasks:", err);
+    }
+};
+
+const startCoupleStatusPolling = () => {
+    if (window.coupleStatusInterval) return;
+
+    window.coupleStatusInterval = setInterval(async () => {
+        if (!state.currentUser || state.partnerId) {
+            clearInterval(window.coupleStatusInterval);
+            delete window.coupleStatusInterval;
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/couple/status/${state.currentUser.id}`);
+            const data = await res.json();
+            
+            if (data.linked) {
+                state.partnerId = data.partner_id;
+                localStorage.setItem('studyLinkPartnerId', state.partnerId);
+                clearInterval(window.coupleStatusInterval);
+                delete window.coupleStatusInterval;
+                enterDashboard();
+            }
+        } catch (err) {
+            console.error("Polling error:", err);
+        }
+    }, 3000);
 };
 
 const fetchPunishments = async () => {
@@ -121,7 +183,8 @@ const enterDashboard = () => {
     document.getElementById('nav-info').innerText = `Me (ID: ${state.currentUser.id}) | Partner (ID: ${state.partnerId})`;
     switchPage('page-dashboard');
     startDeadlineChecker();
-    fetchPunishments(); // Initial fetch
+    fetchTasks();
+    fetchPunishments();
     renderDashboard();
 };
 
@@ -263,6 +326,8 @@ document.getElementById('btn-create-couple').addEventListener('click', async () 
         document.getElementById('btn-enter-dashboard').onclick = () => {
             alert("Still waiting for your partner to join using your code on their device! Once they join, this screen will automatically refresh into the dashboard.");
         };
+
+        startCoupleStatusPolling();
 
     } catch (err) {
         alert(err.message);

@@ -34,3 +34,25 @@ def create_deadline(deadline : DeadlineCreate, db : Session = Depends(get_db)):
     db.commit() 
     db.refresh(new_deadline)
     return new_deadline
+
+@router.get("/{user_id}")
+def get_user_deadlines(user_id: int, db: Session = Depends(get_db)):
+    results = db.query(Deadline, Chapter, Subject).join(
+        Chapter, Deadline.chapter_id == Chapter.id
+    ).join(
+        Subject, Chapter.subject_id == Subject.id
+    ).filter(Deadline.user_id == user_id).all()
+    
+    tasks = []
+    for deadline, chapter, subject in results:
+        tasks.append({
+            "id": deadline.id,
+            "user_id": deadline.user_id,
+            "chapter_id": deadline.chapter_id,
+            "subject": subject.name,
+            "chapter_number": chapter.chapter_number,
+            "chapter_name": chapter.subject, # Chapter model uses 'subject' field for name? Wait let me check
+            "deadline_time": deadline.deadline_time,
+            "status": deadline.status
+        })
+    return tasks
