@@ -14,8 +14,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create tables
-Base.metadata.create_all(bind=engine)
+# Routers and Tables
+from sqlalchemy import text
+@app.on_event("startup")
+def run_migrations():
+    # Create tables
+    Base.metadata.create_all(bind=engine)
+    
+    with engine.begin() as conn: # engine.begin() handles transactions automatically
+        try:
+            conn.execute(text("ALTER TABLE chapters ADD COLUMN IF NOT EXISTS name VARCHAR(200)"))
+            conn.execute(text("ALTER TABLE subjects ALTER COLUMN name TYPE VARCHAR(200)"))
+            print("Migration successful!")
+        except Exception as e:
+            print(f"Migration notice (already applied or error): {e}")
 
 # Routers
 app.include_router(user.router)
