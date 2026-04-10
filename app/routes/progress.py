@@ -13,7 +13,7 @@ from app.schemas.progress import ProgressCreate
 
 router = APIRouter(prefix="/progress", tags=["Progress"])
 
-@router.post("/progress/")
+@router.post("/")
 def create_progress(progress : ProgressCreate, db : Session = Depends(get_db)):
     chapter = db.query(Chapter).filter(Chapter.id == progress.chapter_id).first()
     if not chapter:
@@ -31,3 +31,4 @@ def create_progress(progress : ProgressCreate, db : Session = Depends(get_db)):
     db.commit() 
     db.refresh(new_progress)
     return new_progress
+

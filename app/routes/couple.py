@@ -4,7 +4,7 @@ from app.models.user import User
 from app.models.couple import Couple
 from sqlalchemy.orm import Session
 from app.db.databases import get_db
-from app.schemas.couple import CoupleCreate, CoupleJoin
+from app.schemas.couple import CoupleCreate, CoupleJoin, CoupleDelete
 import random
 
 router = APIRouter(prefix="/couple", tags=["Couple"])
@@ -16,7 +16,7 @@ def generate_unique_code(db : Session) -> str:
         if not exists:
             return code
 
-@router.post("/couples/")
+@router.post("/")
 def create_couple(couple : CoupleCreate, db : Session = Depends(get_db)):
     user = db.query(User).filter(User.id == couple.uid1).first()
     if not user:
@@ -36,7 +36,7 @@ def create_couple(couple : CoupleCreate, db : Session = Depends(get_db)):
     db.refresh(new_couple)
     return new_couple
 
-@router.post("/couples/join")
+@router.post("/join")
 def join_couple(data : CoupleJoin, db : Session = Depends(get_db)):
     user2 = db.query(User).filter(User.id == data.uid2).first()
     if not user2:
@@ -55,3 +55,13 @@ def join_couple(data : CoupleJoin, db : Session = Depends(get_db)):
     db.commit()
     db.refresh(couple)
     return {"message" : "Successfully joined couple", "couple" : couple}
+
+
+@router.delete("/delete")
+def delete_couple(data : CoupleDelete, db : Session = Depends(get_db)):
+    couple = db.query(Couple).filter((Couple.uid1 == data.uid) | (Couple.uid2 == data.uid)).first()
+    if couple:
+        db.delete(couple)
+        db.commit()
+        return {"message": "Couple deleted successfully"}
+    raise HTTPException(status_code=404, detail="Couple not found")

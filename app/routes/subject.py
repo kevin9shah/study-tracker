@@ -8,7 +8,7 @@ from app.schemas.subject import SubjectCreate
 
 router = APIRouter(prefix="/subject", tags=["Subject"])
 
-@router.post("/subjects/")
+@router.post("/")
 def create_subject(subject : SubjectCreate, db : Session = Depends(get_db)):
     user = db.query(User).filter(User.id == subject.user_id).first()
     if not user:

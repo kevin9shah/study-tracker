@@ -14,7 +14,7 @@ from app.schemas.deadline import DeadlineCreate
 router = APIRouter(prefix="/deadline", tags=["Deadline"])
 
 
-@router.post("/deadlines/")
+@router.post("/")
 def create_deadline(deadline : DeadlineCreate, db : Session = Depends(get_db)):
     chapter = db.query(Chapter).filter(Chapter.id == deadline.chapter_id).first()
     if not chapter:

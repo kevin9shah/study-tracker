@@ -9,15 +9,14 @@ from app.schemas.chapter import ChapterCreate
 router = APIRouter(prefix="/chapter", tags=["Chapter"])
 
 
-@router.post("/chapters/")
+@router.post("/")
 def create_chapter(chapter : ChapterCreate, db : Session = Depends(get_db)):
     subject = db.query(Subject).filter(Subject.id == chapter.subject_id).first()
     if not subject:
         raise HTTPException(status_code=404, detail="Subject not found")
     new_chapter = Chapter(
         subject_id = chapter.subject_id,
-        chapter_number = chapter.chapter_number,
-        subject = chapter.subject
+        chapter_number = chapter.chapter_number
     )
     
     db.add(new_chapter)
