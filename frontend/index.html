@@ -4,224 +4,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyLink Dashboard</title>
+    <title>StudyLink // GAMING-HUD</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 
-<body>
-    <div class="scanlines"></div>
-    <div class="app-background">
-        <div class="blob1"></div>
-        <div class="blob2"></div>
-    </div>
-
-    <!-- Bottom Right Decoration -->
-    <div class="bottom-right-decor">
-        <span>🪶</span>
-        <span>📷</span>
-    </div>
+<body class="hud-body">
+    <div class="background-grid"></div>
 
     <!-- PAGE: SETUP -->
-    <div id="page-setup" class="app-page container glass-panel active">
-        <header style="display:flex; flex-direction:column; align-items:center;">
-            <img src="favicon.png" alt="StudyLink Logo" class="app-logo-large">
-            <h1 class="gradient-text">StudyLink Setup</h1>
-            <p>You must authenticate and link your couple to access the dashboard.</p>
-        </header>
-
-        <div id="step-auth" class="setup-block active">
-            <div class="tabs">
-                <button id="tab-login" class="tab-btn active">Login</button>
-                <button id="tab-register" class="tab-btn">Register</button>
-            </div>
-
-            <!-- Login Form -->
-            <form id="form-login">
-                <input type="email" id="login-email" placeholder="Email" required>
-                <input type="password" id="login-pass" placeholder="Password" required>
-                <button type="submit" class="primary-btn full-width">Login</button>
-            </form>
-
-            <!-- Register Form -->
-            <form id="form-register" class="display-none">
-                <input type="text" id="reg-name" placeholder="Name" required>
-                <input type="email" id="reg-email" placeholder="Email" required>
-                <input type="password" id="reg-pass" placeholder="Password" required>
-                <button type="submit" class="success-btn full-width">Sign Up</button>
-            </form>
-
-            <div id="auth-status" class="status-msg"></div>
-        </div>
-
-        <div id="step-couple" class="setup-block">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-                <h2 style="margin:0;">2. Link Partner</h2>
-                <button id="btn-logout-setup" class="danger-btn"
-                    style="padding: 0.4rem 0.8rem; font-size:0.9rem;">Logout</button>
-            </div>
-            <p>Your ID: <strong id="lbl-my-id"></strong>. Ask your partner to generate a code, or generate one yourself.
-            </p>
-            <div class="flex-row">
-                <div class="card">
-                    <button id="btn-create-couple" class="primary-btn full-width">Generate Code</button>
-                    <p id="couple-code-display" class="highlight-code display-none"></p>
+    <div id="page-setup" class="app-page active">
+        <div class="setup-frame">
+            <header class="hud-header">
+                <img src="favicon.png" alt="Logo" class="hud-logo">
+                <div class="title-stack">
+                    <h1 class="glitch-title">STUDY_LINK</h1>
+                    <span class="version-tag">VER_2.0.4 // LOCAL_HOST</span>
                 </div>
-                <div class="card">
-                    <form id="form-join-couple" style="flex-direction:row;">
-                        <input type="text" id="join-code" placeholder="Enter Code" required style="flex:1;">
-                        <button type="submit" class="primary-btn">Join</button>
+            </header>
+
+            <div id="step-auth" class="auth-panel hud-card active">
+                <div class="panel-tabs">
+                    <button id="tab-login" class="hud-tab active">LOGIN_AUTH</button>
+                    <button id="tab-register" class="hud-tab">REG_USER</button>
+                </div>
+
+                <div class="hud-form-body">
+                    <form id="form-login">
+                        <div class="hud-input-group">
+                            <label>UID_EMAIL</label>
+                            <input type="email" id="login-email" placeholder="ENTER EMAIL..." required>
+                        </div>
+                        <div class="hud-input-group">
+                            <label>SECURITY_KEY</label>
+                            <input type="password" id="login-pass" placeholder="ENTER KEY..." required>
+                        </div>
+                        <button type="submit" class="hud-primary-btn">INIT_SESSION</button>
                     </form>
-                    <div id="join-status" class="status-msg"></div>
-                </div>
-            </div>
-            <button id="btn-enter-dashboard" class="success-btn full-width mt-20 display-none">Enter Dashboard</button>
-        </div>
 
-        <!-- Branding Footer -->
-        <div id="login-footer" class="footer-branding">
-            Made by Kevin Shah
+                    <form id="form-register" class="display-none">
+                        <div class="hud-input-group"><label>USER_NAME</label><input type="text" id="reg-name" required></div>
+                        <div class="hud-input-group"><label>EMAIL_ADDR</label><input type="email" id="reg-email" required></div>
+                        <div class="hud-input-group"><label>CREATE_KEY</label><input type="password" id="reg-pass" required></div>
+                        <button type="submit" class="hud-success-btn">REGISTER_NODE</button>
+                    </form>
+                </div>
+                <div id="auth-status" class="status-msg"></div>
+            </div>
+
+            <div id="step-couple" class="setup-block hud-card">
+                <div class="card-header">
+                    <h2>LINK_PARTNER</h2>
+                    <button id="btn-logout-setup" class="hud-text-btn">LOG_OUT</button>
+                </div>
+                <div class="my-id-box">
+                    <span class="sm-label">LOCAL_ID</span>
+                    <strong id="lbl-my-id"></strong>
+                </div>
+                
+                <div class="link-grid">
+                    <div class="link-node">
+                        <h3>GENERATE_LINK</h3>
+                        <button id="btn-create-couple" class="hud-secondary-btn">GET CODE</button>
+                        <div id="couple-code-display" class="code-box display-none"></div>
+                    </div>
+                    <div class="link-node">
+                        <h3>JOIN_PARTNER</h3>
+                        <form id="form-join-couple" class="mini-form">
+                            <input type="text" id="join-code" placeholder="ENTER CODE" required>
+                            <button type="submit" class="hud-primary-btn mini">OK</button>
+                        </form>
+                    </div>
+                </div>
+                <div id="join-status" class="status-msg"></div>
+                <button id="btn-enter-dashboard" class="hud-success-btn display-none">CONNECT_ESTABLISHED // ENTER</button>
+            </div>
         </div>
     </div>
 
-    <!-- PAGE: DASHBOARD (50/50 Split) -->
-    <div id="page-dashboard" class="app-page dashboard-wrapper">
-        <div class="top-nav glass-panel">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <img src="favicon.png" alt="StudyLink Logo" class="app-logo">
-                <h2 style="margin:0;">StudyLink Sync</h2>
+    <!-- PAGE: DASHBOARD -->
+    <div id="page-dashboard" class="app-page dashboard-hud">
+        <header class="top-hud-bar">
+            <div class="bar-left">
+                <img src="favicon.png" alt="Logo" class="mini-logo">
+                <div class="sys-info">
+                    <span class="sys-label">SYSTEM_CORE</span>
+                    <div id="nav-info" class="sys-val"></div>
+                </div>
             </div>
-            <div id="nav-info"></div>
-            <div style="display:flex; gap:10px;">
-                <button id="btn-add-task" class="primary-btn">+ Add My Task</button>
-                <button id="btn-delete-couple" class="danger-btn">Unpair</button>
-                <button id="btn-logout" class="danger-btn">Logout</button>
+            <div class="bar-center">
+                <div class="couple-stat-pill">
+                    <span class="pill-label">COUPLE_SYNC</span>
+                    <div class="pill-progress-bg"><div class="pill-fill" style="width: 50%"></div></div>
+                </div>
             </div>
-        </div>
+            <div class="bar-right">
+                <button id="btn-add-task" class="hud-ctrl-btn blue">+ NEW_GOAL</button>
+                <button id="btn-delete-couple" class="hud-ctrl-btn red">UNPAIR</button>
+                <button id="btn-logout" class="hud-ctrl-btn">EXIT</button>
+            </div>
+        </header>
 
-        <div class="split-container">
-            <!-- LEFT: ME -->
-            <div class="board-half my-board glass-panel">
-                <div class="board-header">
-                    <h3 id="my-board-title">My Tracker</h3>
-                    <p>Cross off your finished chapters</p>
-                    <div class="progress-container">
-                        <div class="progress-bar-bg"><div id="my-progress-bar" class="progress-bar-fill" style="width: 0%"></div></div>
-                        <span id="my-progress-text" class="progress-percentage">0%</span>
+        <main class="hud-main-grid">
+            <!-- PLAYER 1 (ME) -->
+            <section class="hud-sector player-sector">
+                <div class="sector-header blue-glow">
+                    <div class="player-icon">ME</div>
+                    <div class="player-info">
+                        <h2 id="my-board-title">PLAYER_01</h2>
+                        <div class="health-bar-container">
+                            <label>PROGRESS</label>
+                            <div class="hb-bg"><div id="my-progress-bar" class="hb-fill blue"></div></div>
+                            <span id="my-progress-text" class="hb-val">0%</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="table-container">
-                    <table class="styled-table" id="my-table">
-                        <thead>
-                            <tr>
-                                <th>Status</th>
-                                <th>Subject</th>
-                                <th>Chap.</th>
-                                <th>Deadline</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="my-tasks-body"></tbody>
-                        <tbody id="my-completed-header-row" class="display-none"><tr class="table-divider"><td colspan="5">Completed Tasks</td></tr></tbody>
-                        <tbody id="my-completed-body"></tbody>
-                    </table>
-                </div>
+                <div class="sector-content">
+                    <div class="hud-table-container">
+                        <table class="hud-table">
+                            <thead>
+                                <tr>
+                                    <th width="40">CHK</th>
+                                    <th>OBJECTIVE</th>
+                                    <th>SEC</th>
+                                    <th>TIME_REMAINING</th>
+                                    <th width="40">DEL</th>
+                                </tr>
+                            </thead>
+                            <tbody id="my-tasks-body"></tbody>
+                            <tbody id="my-completed-header-row" class="display-none"><tr class="table-subhead"><td colspan="5">STAGED_COMPLETED</td></tr></tbody>
+                            <tbody id="my-completed-body"></tbody>
+                        </table>
+                    </div>
 
-                <div class="missed-section">
-                    <h4 id="my-missed-title">My Missed Deadlines</h4>
-                    <div id="my-missed-list" class="list-wrapper"></div>
+                    <div class="stat-boxes">
+                        <div class="stat-box red-alert">
+                            <label>MISSED_GOALS</label>
+                            <div id="my-missed-list" class="mini-hud-list"></div>
+                        </div>
+                        <div class="stat-box yellow-warn">
+                            <label>ACTIVE_PENALTIES</label>
+                            <div id="my-punishment-list" class="mini-hud-list"></div>
+                        </div>
+                    </div>
                 </div>
+            </section>
 
-                <div class="punishment-section">
-                    <h4 id="my-punishment-title">Punishments Dictated by Partner</h4>
-                    <div id="my-punishment-list" class="list-wrapper"></div>
-                </div>
-            </div>
-
-            <!-- RIGHT: PARTNER -->
-            <div class="board-half partner-board glass-panel">
-                <div class="board-header">
-                    <h3 id="partner-board-title">Partner's Tracker</h3>
-                    <p>Monitor their progress</p>
-                    <div class="progress-container">
-                        <div class="progress-bar-bg"><div id="partner-progress-bar" class="progress-bar-fill partner-fill" style="width: 0%"></div></div>
-                        <span id="partner-progress-text" class="progress-percentage">0%</span>
+            <!-- PLAYER 2 (PARTNER) -->
+            <section class="hud-sector partner-sector">
+                <div class="sector-header red-glow">
+                    <div class="player-icon partner">P2</div>
+                    <div class="player-info">
+                        <h2 id="partner-board-title">PLAYER_02</h2>
+                        <div class="health-bar-container">
+                            <label>PROGRESS</label>
+                            <div class="hb-bg"><div id="partner-progress-bar" class="hb-fill red"></div></div>
+                            <span id="partner-progress-text" class="hb-val">0%</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="table-container">
-                    <table class="styled-table" id="partner-table">
-                        <thead>
-                            <tr>
-                                <th>Status</th>
-                                <th>Subject</th>
-                                <th>Chap.</th>
-                                <th>Deadline</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="partner-tasks-body"></tbody>
-                        <tbody id="partner-completed-header-row" class="display-none"><tr class="table-divider"><td colspan="5">Completed Tasks</td></tr></tbody>
-                        <tbody id="partner-completed-body"></tbody>
-                    </table>
-                </div>
+                <div class="sector-content">
+                    <div class="hud-table-container">
+                        <table class="hud-table">
+                            <thead>
+                                <tr>
+                                    <th width="40">CHK</th>
+                                    <th>OBJECTIVE</th>
+                                    <th>SEC</th>
+                                    <th>TIME_REMAINING</th>
+                                </tr>
+                            </thead>
+                            <tbody id="partner-tasks-body"></tbody>
+                            <tbody id="partner-completed-header-row" class="display-none"><tr class="table-subhead"><td colspan="5">STAGED_COMPLETED</td></tr></tbody>
+                            <tbody id="partner-completed-body"></tbody>
+                        </table>
+                    </div>
 
-                <div class="missed-section error-bg">
-                    <h4 id="partner-missed-title">Partner's Missed Deadlines</h4>
-                    <p class="small-text">You can assign a punishment if they missed these.</p>
-                    <div id="partner-missed-list" class="list-wrapper"></div>
+                    <div class="stat-boxes">
+                        <div class="stat-box red-alert">
+                            <label>PARTNER_MISSED</label>
+                            <div id="partner-missed-list" class="mini-hud-list"></div>
+                        </div>
+                        <div class="stat-box yellow-warn">
+                            <label>STAGED_PENALTIES</label>
+                            <div id="partner-punishment-list" class="mini-hud-list"></div>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="punishment-section">
-                    <h4 id="partner-punishment-title">Punishments You Assigned</h4>
-                    <div id="partner-punishment-list" class="list-wrapper"></div>
-                </div>
-            </div>
-        </div>
+            </section>
+        </main>
     </div>
 
     <!-- MODAL: ADD TASK -->
-    <div id="modal-task" class="modal">
-        <div class="modal-content glass-panel">
-            <h3>Create a Study Session</h3>
+    <div id="modal-task" class="hud-modal">
+        <div class="modal-card hud-card border-blue">
+            <h2>NEW_CAMPAIGN_GOAL</h2>
             <form id="form-task">
-                <div class="flex-row">
-                    <input type="text" id="t-subject" placeholder="Subject Name" required>
+                <div class="hud-input-group">
+                    <label>SUBJECT_MODULE</label>
+                    <input type="text" id="t-subject" required>
                 </div>
-                <div class="flex-row">
-                    <input type="number" id="t-chap-num" placeholder="Chapter Number" required>
-                    <input type="text" id="t-chap-name" placeholder="Chapter Name" required>
+                <div class="hud-row">
+                    <div class="hud-input-group"><label>CHAP_#</label><input type="number" id="t-chap-num" required></div>
+                    <div class="hud-input-group"><label>CHAP_NAME</label><input type="text" id="t-chap-name" required></div>
                 </div>
-                <div class="flex-row">
-                    <label style="flex:1;">Deadline:</label>
-                    <input type="datetime-local" id="t-deadline" required style="flex:2;">
+                <div class="hud-input-group">
+                    <label>DROP_DEADLINE</label>
+                    <input type="datetime-local" id="t-deadline" required>
                 </div>
-                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                    <button type="button" class="danger-btn"
-                        onclick="document.getElementById('modal-task').style.display='none'">Cancel</button>
-                    <button type="submit" class="success-btn">Create & Sync</button>
+                <div class="modal-btns">
+                    <button type="button" class="hud-secondary-btn" onclick="document.getElementById('modal-task').style.display='none'">ABORT</button>
+                    <button type="submit" class="hud-primary-btn">ESTABLISH_GOAL</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL: ASSIGN PUNISHMENT -->
-    <div id="modal-punishment" class="modal">
-        <div class="modal-content glass-panel">
-            <h3>Assign Punishment to Partner</h3>
-            <p>They missed their deadline for <strong id="p-deadline-name"></strong>.</p>
+    <!-- MODAL: PUNISHMENT -->
+    <div id="modal-punishment" class="hud-modal">
+        <div class="modal-card hud-card border-red">
+            <h2>PUNISHMENT_PROTOCOL</h2>
+            <p>Target missed: <strong id="p-deadline-name"></strong>.</p>
             <form id="form-assign-punish">
                 <input type="hidden" id="p-task-id">
-                <input type="text" id="p-title" placeholder="e.g. Wash the dishes for a week" required>
-                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                    <button type="button" class="danger-btn"
-                        onclick="document.getElementById('modal-punishment').style.display='none'">Cancel</button>
-                    <button type="submit" class="success-btn">Dictate Punishment</button>
+                <div class="hud-input-group">
+                    <label>PENALTY_DETAIL</label>
+                    <input type="text" id="p-title" required>
+                </div>
+                <div class="modal-btns">
+                    <button type="button" class="hud-secondary-btn" onclick="document.getElementById('modal-punishment').style.display='none'">CANCEL</button>
+                    <button type="submit" class="hud-danger-btn">ENFORCE</button>
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- PERSONAL BRANDING -->
+    <div class="kevin-branding">
+        <span class="kevin-decor">🪶 📷</span>
+        <span class="kevin-text">DESIGNED_BY_KEVIN_SHAH</span>
     </div>
 
     <script src="app.js"></script>
