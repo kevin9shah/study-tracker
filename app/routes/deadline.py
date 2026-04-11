@@ -58,3 +58,13 @@ def get_user_deadlines(user_id: int, db: Session = Depends(get_db)):
             "status": deadline.status
         })
     return tasks
+
+@router.delete("/{deadline_id}")
+def delete_deadline(deadline_id: int, db: Session = Depends(get_db)):
+    deadline = db.query(Deadline).filter(Deadline.id == deadline_id).first()
+    if not deadline:
+        raise HTTPException(status_code=404, detail="Deadline not found")
+    
+    db.delete(deadline)
+    db.commit()
+    return {"message": "Deadline deleted successfully"}

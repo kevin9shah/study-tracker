@@ -490,6 +490,43 @@ const toggleTaskStatus = async (taskId, checked) => {
     } catch (e) { console.error("API error", e); }
 };
 
+const deleteTask = async (taskId) => {
+    if (!confirm("Are you sure you want to delete this task?")) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/deadline/${taskId}`, {
+            method: 'DELETE'
+        });
+
+        if (!res.ok) throw new Error("Failed to delete task");
+
+        // Remove from local state
+        state.tasks = state.tasks.filter(t => t.id !== taskId);
+        saveTasks();
+        renderDashboard();
+    } catch (err) {
+        alert(err.message);
+    }
+};
+
+const deletePunishment = async (punId) => {
+    if (!confirm("Are you sure you want to delete this punishment?")) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/punishment/${punId}`, {
+            method: 'DELETE'
+        });
+
+        if (!res.ok) throw new Error("Failed to delete punishment");
+
+        state.punishments = state.punishments.filter(p => p.id !== punId);
+        savePunishments();
+        renderDashboard();
+    } catch (err) {
+        alert(err.message);
+    }
+};
+
 const assignPunishment = (taskId, taskName) => {
     document.getElementById('p-task-id').value = taskId;
     document.getElementById('p-deadline-name').innerText = taskName;
@@ -574,7 +611,9 @@ const renderDashboard = () => {
     document.getElementById('partner-punishment-title').innerText = `Punishments for ${partnerName}`;
 
     const myTBody = document.getElementById('my-tasks-body');
+    const myCompBody = document.getElementById('my-completed-body');
     const partnerTBody = document.getElementById('partner-tasks-body');
+    const partnerCompBody = document.getElementById('partner-completed-body');
 
     const myMissedBody = document.getElementById('my-missed-list');
     const partnerMissedBody = document.getElementById('partner-missed-list');
@@ -582,9 +621,31 @@ const renderDashboard = () => {
     const myPunishmentsBody = document.getElementById('my-punishment-list');
     const partnerPunishsmentBody = document.getElementById('partner-punishment-list');
 
-    myTBody.innerHTML = ''; partnerTBody.innerHTML = '';
+    myTBody.innerHTML = ''; myCompBody.innerHTML = '';
+    partnerTBody.innerHTML = ''; partnerCompBody.innerHTML = '';
     myMissedBody.innerHTML = ''; partnerMissedBody.innerHTML = '';
     myPunishmentsBody.innerHTML = ''; partnerPunishsmentBody.innerHTML = '';
+
+    let myAnyCompleted = false;
+    let partnerAnyCompleted = false;
+
+    // Calculate Progress
+    const myTasks = state.tasks.filter(t => t.userId === state.currentUser.id);
+    const partnerTasks = state.tasks.filter(t => t.userId === state.partnerId);
+
+    const calcProgress = (tasks) => {
+        if (tasks.length === 0) return 0;
+        const completed = tasks.filter(t => t.status === 'completed').length;
+        return Math.round((completed / tasks.length) * 100);
+    };
+
+    const myPercent = calcProgress(myTasks);
+    const partnerPercent = calcProgress(partnerTasks);
+
+    document.getElementById('my-progress-bar').style.width = `${myPercent}%`;
+    document.getElementById('my-progress-text').innerText = `${myPercent}%`;
+    document.getElementById('partner-progress-bar').style.width = `${partnerPercent}%`;
+    document.getElementById('partner-progress-text').innerText = `${partnerPercent}%`;
 
     // Sort tasks
     state.tasks.forEach(t => {
@@ -592,20 +653,33 @@ const renderDashboard = () => {
 
         if (t.status === 'pending' || t.status === 'completed' || t.status === 'active') {
             const tr = document.createElement('tr');
-            if (t.status === 'completed') tr.className = 'completed-row';
-
             const isMe = t.userId === state.currentUser.id;
+            
+            if (t.status === 'completed') {
+                tr.className = 'completed-row';
+                if (isMe) myAnyCompleted = true;
+                else partnerAnyCompleted = true;
+            }
+
             const ck = isMe ? `<input type="checkbox" class="task-checkbox" ${t.status === 'completed' ? 'checked' : ''} onchange="toggleTaskStatus('${t.id}', this.checked)">` : (t.status === 'completed' ? '✅' : '◻️');
+            
+            const deleteBtn = isMe ? `<button class="danger-btn" style="padding:0.4rem 0.6rem; font-size:0.8rem;" onclick="deleteTask(${t.id})">🗑️</button>` : '';
 
             tr.innerHTML = `
                 <td>${ck}</td>
                 <td>${t.subject}</td>
                 <td>Ch.${t.chapNum}: ${t.chapName}</td>
                 <td>${dStr}</td>
+                <td>${deleteBtn}</td>
             `;
 
-            if (isMe) myTBody.appendChild(tr);
-            else partnerTBody.appendChild(tr);
+            if (isMe) {
+                if (t.status === 'completed') myCompBody.appendChild(tr);
+                else myTBody.appendChild(tr);
+            } else {
+                if (t.status === 'completed') partnerCompBody.appendChild(tr);
+                else partnerTBody.appendChild(tr);
+            }
         } else if (t.status === 'missed') {
             const div = document.createElement('div');
             div.className = 'list-item';
@@ -617,7 +691,7 @@ const renderDashboard = () => {
                 myMissedBody.appendChild(div);
             } else {
                 // Check if punishment already assigned
-                const pAssigned = state.punishments.some(p => Number(p.taskId) === Number(t.id));
+                const pAssigned = state.punishments.some(p => String(p.taskId) === String(t.id));
                 const btnHtml = pAssigned
                     ? `<span style="color:var(--success)">Punished</span>`
                     : `<button class="danger-btn" style="padding:0.4em 0.8em;" onclick="assignPunishment('${t.id}', '${t.subject} - Ch.${t.chapNum}')">Assign Punishment</button>`;
@@ -628,14 +702,19 @@ const renderDashboard = () => {
         }
     });
 
+    // Toggle Completed Headers
+    document.getElementById('my-completed-header-row').className = myAnyCompleted ? '' : 'display-none';
+    document.getElementById('partner-completed-header-row').className = partnerAnyCompleted ? '' : 'display-none';
+
     state.punishments.forEach(p => {
         const div = document.createElement('div');
         div.className = 'list-item';
 
         const isMine = p.assignerId === state.currentUser.id;
 
-        let actionBtn = "";
+        let deletePBtn = "";
         if (isMine) {
+            deletePBtn = `<button class="danger-btn" style="padding:0.4rem 0.6rem; font-size:0.8rem; margin-left:8px;" onclick="deletePunishment(${p.id})">🗑️</button>`;
             if (p.status === 'completed') {
                 actionBtn = `<button class="danger-btn" style="padding:0.4rem 0.8rem; font-size:0.8rem;" onclick="togglePunishment(${p.id})">Undo</button>`;
             } else {
@@ -648,13 +727,14 @@ const renderDashboard = () => {
             : `<span style="color:var(--text-muted)">Assigned</span>`;
 
         div.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:4px;">
+            <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
                 <span style="color:var(--danger); font-weight:600;">🔥 ${p.title}</span>
                 <div style="display:flex; align-items:center; gap:10px;">
                     ${statusLabel}
                     ${actionBtn}
                 </div>
             </div>
+            ${deletePBtn}
         `;
 
         if (p.assigneeId === state.currentUser.id) myPunishmentsBody.appendChild(div);

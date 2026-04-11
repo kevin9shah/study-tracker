@@ -58,3 +58,12 @@ def get_user_punishments(user_id: int, db: Session = Depends(get_db)):
     punishments = db.query(Punishment).filter(Punishment.user_id == user_id).all()
     return punishments
 
+@router.delete('/{id}')
+def delete_punishment(id: int, db: Session = Depends(get_db)):
+    db_punishment = db.query(Punishment).filter(Punishment.id == id).first()
+
+    if not db_punishment:
+        raise HTTPException(status_code=404, detail="Punishment not found")
+    db.delete(db_punishment)
+    db.commit()
+    return {"message": "Punishment deleted successfully"}

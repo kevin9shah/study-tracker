@@ -107,6 +107,10 @@
                 <div class="board-header">
                     <h3 id="my-board-title">My Tracker</h3>
                     <p>Cross off your finished chapters</p>
+                    <div class="progress-container">
+                        <div class="progress-bar-bg"><div id="my-progress-bar" class="progress-bar-fill" style="width: 0%"></div></div>
+                        <span id="my-progress-text" class="progress-percentage">0%</span>
+                    </div>
                 </div>
 
                 <div class="table-container">
@@ -117,9 +121,12 @@
                                 <th>Subject</th>
                                 <th>Chap.</th>
                                 <th>Deadline</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="my-tasks-body"></tbody>
+                        <tbody id="my-completed-header-row" class="display-none"><tr class="table-divider"><td colspan="5">Completed Tasks</td></tr></tbody>
+                        <tbody id="my-completed-body"></tbody>
                     </table>
                 </div>
 
@@ -139,6 +146,10 @@
                 <div class="board-header">
                     <h3 id="partner-board-title">Partner's Tracker</h3>
                     <p>Monitor their progress</p>
+                    <div class="progress-container">
+                        <div class="progress-bar-bg"><div id="partner-progress-bar" class="progress-bar-fill partner-fill" style="width: 0%"></div></div>
+                        <span id="partner-progress-text" class="progress-percentage">0%</span>
+                    </div>
                 </div>
 
                 <div class="table-container">
@@ -149,9 +160,12 @@
                                 <th>Subject</th>
                                 <th>Chap.</th>
                                 <th>Deadline</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="partner-tasks-body"></tbody>
+                        <tbody id="partner-completed-header-row" class="display-none"><tr class="table-divider"><td colspan="5">Completed Tasks</td></tr></tbody>
+                        <tbody id="partner-completed-body"></tbody>
                     </table>
                 </div>
 

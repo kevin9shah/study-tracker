@@ -199,6 +199,46 @@ p {
     border-bottom: 1px dashed var(--glass-border);
 }
 
+/* Progress Bar */
+.progress-container {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.progress-bar-bg {
+    flex: 1;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--glass-border);
+}
+
+.progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--primary), #a78bfa);
+    border-radius: 5px;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+.partner-fill {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.progress-percentage {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+    min-width: 40px;
+    text-align: right;
+}
+
 /* Tables */
 .table-container {
     margin-bottom: 2rem;
@@ -244,6 +284,18 @@ p {
 }
 
 /* Sections */
+.table-divider td {
+    background: rgba(139, 92, 246, 0.1);
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary);
+    padding: 8px !important;
+    border: none !important;
+}
+
 .missed-section,
 .punishment-section {
     background: rgba(0, 0, 0, 0.2);

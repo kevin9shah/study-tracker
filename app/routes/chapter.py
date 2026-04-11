@@ -3,7 +3,7 @@ from app.models.subject import Subject
 from app.models.chapter import Chapter
 from sqlalchemy.orm import Session
 from app.db.databases import get_db
-from app.schemas.chapter import ChapterCreate
+from app.schemas.chapter import ChapterCreate, ChapterDelete
 
 
 router = APIRouter(prefix="/chapter", tags=["Chapter"])
@@ -24,3 +24,17 @@ def create_chapter(chapter : ChapterCreate, db : Session = Depends(get_db)):
     db.commit() 
     db.refresh(new_chapter)
     return new_chapter
+
+@router.delete("/")
+def delete_chapter(data: ChapterDelete, db: Session = Depends(get_db)):
+    chapter = db.query(Chapter).filter(
+        Chapter.subject_id == data.subject_id,
+        Chapter.chapter_number == data.chapter_number
+    ).first()
+    
+    if not chapter:
+        raise HTTPException(status_code=404, detail="Chapter not found")
+    
+    db.delete(chapter)
+    db.commit()
+    return {"message": "Chapter deleted successfully"}
