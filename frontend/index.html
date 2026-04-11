@@ -4,13 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyLink Dual Dashboard</title>
+    <title>StudyLink Dashboard</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 </head>
 
 <body>
+    <div class="scanlines"></div>
     <div class="app-background">
         <div class="blob1"></div>
         <div class="blob2"></div>
@@ -31,11 +32,9 @@
         </header>
 
         <div id="step-auth" class="setup-block active">
-            <div class="tabs" style="display:flex; margin-bottom:1rem; border-bottom:1px solid var(--glass-border);">
-                <button id="tab-login" class="tab-btn active"
-                    style="flex:1; background:transparent; border:none; border-bottom:2px solid var(--primary); padding:0.8rem; font-weight:600; color:var(--text-main);">Login</button>
-                <button id="tab-register" class="tab-btn"
-                    style="flex:1; background:transparent; border:none; padding:0.8rem; font-weight:600; color:var(--text-muted);">Register</button>
+            <div class="tabs">
+                <button id="tab-login" class="tab-btn active">Login</button>
+                <button id="tab-register" class="tab-btn">Register</button>
             </div>
 
             <!-- Login Form -->
@@ -96,7 +95,7 @@
             <div id="nav-info"></div>
             <div style="display:flex; gap:10px;">
                 <button id="btn-add-task" class="primary-btn">+ Add My Task</button>
-                <button id="btn-delete-couple" class="danger-btn" style="background:#b91c1c;">Unpair</button>
+                <button id="btn-delete-couple" class="danger-btn">Unpair</button>
                 <button id="btn-logout" class="danger-btn">Logout</button>
             </div>
         </div>
