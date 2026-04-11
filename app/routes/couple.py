@@ -54,7 +54,17 @@ def join_couple(data : CoupleJoin, db : Session = Depends(get_db)):
     couple.status = "active"
     db.commit()
     db.refresh(couple)
-    return {"message" : "Successfully joined couple", "couple" : couple}
+    partner_id = couple.uid1 # Since the current user is uid2
+    partner_name = "Partner"
+    partner = db.query(User).filter(User.id == partner_id).first()
+    if partner:
+        partner_name = partner.name
+
+    return {
+        "message" : "Successfully joined couple", 
+        "couple" : couple,
+        "partner_name": partner_name
+    }
 
 
 @router.delete("/delete")
@@ -72,13 +82,15 @@ def get_couple_status(uid: int, db: Session = Depends(get_db)):
     if not couple:
         return {"linked": False}
     
-    partner_id = None
-    if couple.uid1 == uid:
-        partner_id = couple.uid2
-    else:
-        partner_id = couple.uid1
+    partner_id = couple.uid2 if couple.uid1 == uid else couple.uid1
+    partner_name = "Partner"
+    if partner_id:
+        partner = db.query(User).filter(User.id == partner_id).first()
+        if partner:
+            partner_name = partner.name
         
     return {
         "linked": couple.status == "active",
-        "partner_id": partner_id
+        "partner_id": partner_id,
+        "partner_name": partner_name
     }

@@ -42,11 +42,17 @@ def login_user(user : UserLogin, db : Session = Depends(get_db)):
     from app.models.couple import Couple
     couple = db.query(Couple).filter((Couple.uid1 == existing_user.id) | (Couple.uid2 == existing_user.id)).first()
     partner_id = None
+    partner_name = None
     if couple:
         if couple.uid1 == existing_user.id and couple.uid2 is not None:
             partner_id = couple.uid2
         elif couple.uid2 == existing_user.id:
             partner_id = couple.uid1
+        
+        if partner_id:
+            partner = db.query(User).filter(User.id == partner_id).first()
+            if partner:
+                partner_name = partner.name
 
     return {"message" : "Successfully logged in",
             "user" : {
@@ -54,7 +60,8 @@ def login_user(user : UserLogin, db : Session = Depends(get_db)):
                 "name" : existing_user.name,
                 "email" : existing_user.email,
             },
-            "partner_id": partner_id
+            "partner_id": partner_id,
+            "partner_name": partner_name
             }
     
     

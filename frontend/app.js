@@ -268,7 +268,9 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
 
         if (data.partner_id) {
             state.partnerId = data.partner_id;
+            state.partnerName = data.partner_name || "Partner";
             localStorage.setItem('studyLinkPartnerId', state.partnerId);
+            localStorage.setItem('studyLinkPartnerName', state.partnerName);
             enterDashboard();
         } else {
             document.getElementById('step-auth').classList.remove('active');
