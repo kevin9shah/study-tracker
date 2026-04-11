@@ -16,9 +16,17 @@ router = APIRouter(prefix="/punishment", tags=["Punishment"])
 def create_punishment(punishment : PunishmentCreate, db : Session = Depends(get_db)):
     user = db.query(User).filter(User.id == punishment.user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")    
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if a punishment already exists for this task
+    if punishment.task_id:
+        existing = db.query(Punishment).filter(Punishment.task_id == punishment.task_id).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Punishment already assigned for this task")
+
     new_punishment = Punishment(
         user_id = punishment.user_id,
+        task_id = punishment.task_id,
         title = punishment.title,
         status = punishment.status
     )

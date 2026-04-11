@@ -145,6 +145,7 @@ const fetchPunishments = async () => {
                 assigneeId: state.currentUser.id,
                 assignerId: state.partnerId,
                 title: p.title,
+                taskId: p.task_id, // Link to missed task
                 status: p.status
             })),
             ...partnerPuns.map(p => ({
@@ -152,6 +153,7 @@ const fetchPunishments = async () => {
                 assigneeId: state.partnerId,
                 assignerId: state.currentUser.id,
                 title: p.title,
+                taskId: p.task_id, // Link to missed task
                 status: p.status
             }))
         ];
@@ -431,14 +433,16 @@ document.getElementById('form-task').addEventListener('submit', async (e) => {
         const chapId = chapData.id || Math.floor(Math.random() * 1000);
 
         // 3. Deadline
-        await fetch(`${API_BASE}/deadline/`, {
+        let resDeadline = await fetch(`${API_BASE}/deadline/`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: state.currentUser.id, chapter_id: chapId, deadline_time: tDeadline.toISOString(), status: 'pending' })
         });
+        let deadlineData = await resDeadline.json();
+        const realTaskId = deadlineData.id;
 
         // Save local
         const task = {
-            id: 't_' + Date.now(),
+            id: realTaskId || ('t_' + Date.now()),
             userId: state.currentUser.id,
             chapId: chapId, // for progress update
             subject: tSub,
@@ -499,6 +503,7 @@ document.getElementById('form-assign-punish').addEventListener('submit', async (
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 user_id: state.partnerId,
+                task_id: (taskId && !isNaN(taskId)) ? parseInt(taskId) : null, // Send real DB ID if available
                 title: title,
                 status: 'assigned'
             })
@@ -607,7 +612,7 @@ const renderDashboard = () => {
                 myMissedBody.appendChild(div);
             } else {
                 // Check if punishment already assigned
-                const pAssigned = state.punishments.some(p => p.taskId === t.id);
+                const pAssigned = state.punishments.some(p => Number(p.taskId) === Number(t.id));
                 const btnHtml = pAssigned
                     ? `<span style="color:var(--success)">Punished</span>`
                     : `<button class="danger-btn" style="padding:0.4em 0.8em;" onclick="assignPunishment('${t.id}', '${t.subject} - Ch.${t.chapNum}')">Assign Punishment</button>`;

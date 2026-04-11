@@ -415,7 +415,7 @@ button {
     right: 25px;
     font-size: 1.2rem;
     display: flex;
-    gap: 5px;
+    gap: 3px;
     z-index: 1000;
 }
 

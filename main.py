@@ -25,6 +25,7 @@ def run_migrations():
         try:
             conn.execute(text("ALTER TABLE chapters ADD COLUMN IF NOT EXISTS name VARCHAR(200)"))
             conn.execute(text("ALTER TABLE subjects ALTER COLUMN name TYPE VARCHAR(200)"))
+            conn.execute(text("ALTER TABLE punishments ADD COLUMN IF NOT EXISTS task_id INTEGER REFERENCES deadlines(id)"))
             print("Migration successful!")
         except Exception as e:
             print(f"Migration notice (already applied or error): {e}")
