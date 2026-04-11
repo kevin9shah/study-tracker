@@ -661,8 +661,8 @@ const renderDashboard = () => {
     let partnerAnyCompleted = false;
 
     // Calculate Progress
-    const myTasks = state.tasks.filter(t => t.userId === state.currentUser.id);
-    const partnerTasks = state.tasks.filter(t => t.userId === state.partnerId);
+    const myTasks = state.tasks.filter(t => String(t.userId) === String(state.currentUser.id));
+    const partnerTasks = state.tasks.filter(t => String(t.userId) === String(state.partnerId));
 
     const calcProgress = (tasks) => {
         if (tasks.length === 0) return 0;
@@ -672,6 +672,8 @@ const renderDashboard = () => {
 
     const myPercent = calcProgress(myTasks);
     const partnerPercent = calcProgress(partnerTasks);
+    
+    console.log(`Progress Update - Me: ${myPercent}% (${myTasks.length} tasks), Partner: ${partnerPercent}% (${partnerTasks.length} tasks)`);
 
     document.getElementById('my-progress-bar').style.width = `${myPercent}%`;
     document.getElementById('my-progress-text').innerText = `${myPercent}%`;
