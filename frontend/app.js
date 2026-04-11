@@ -310,7 +310,7 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
 });
 
 const togglePunishment = async (id) => {
-    const p = state.punishments.find(x => x.id == id);
+    const p = state.punishments.find(x => String(x.id) === String(id));
     if (!p) return;
 
     const newStatus = p.status === "completed" ? "assigned" : "completed";
@@ -510,11 +510,11 @@ document.getElementById('form-task').addEventListener('submit', async (e) => {
 });
 
 const toggleTaskStatus = async (taskId, checked) => {
-    const task = state.tasks.find(t => t.id === taskId);
+    const task = state.tasks.find(t => String(t.id) === String(taskId));
     if (!task) return;
 
     // Ignore if not my task
-    if (task.userId !== state.currentUser.id) return;
+    if (String(task.userId) !== String(state.currentUser.id)) return;
 
     if (task.status === 'missed' || task.status === 'missed-done') {
         task.status = checked ? 'missed-done' : 'missed';
@@ -549,7 +549,7 @@ const deleteTask = async (taskId) => {
         if (!res.ok) throw new Error("Failed to delete task");
 
         // Remove from local state
-        state.tasks = state.tasks.filter(t => t.id !== taskId);
+        state.tasks = state.tasks.filter(t => String(t.id) !== String(taskId));
         saveTasks();
         renderDashboard();
     } catch (err) {
@@ -567,7 +567,7 @@ const deletePunishment = async (punId) => {
 
         if (!res.ok) throw new Error("Failed to delete punishment");
 
-        state.punishments = state.punishments.filter(p => p.id !== punId);
+        state.punishments = state.punishments.filter(p => String(p.id) !== String(punId));
         savePunishments();
         renderDashboard();
     } catch (err) {
@@ -703,7 +703,7 @@ const renderDashboard = () => {
 
         if (t.status === 'pending' || t.status === 'completed' || t.status === 'active') {
             const tr = document.createElement('tr');
-            const isMe = t.userId === state.currentUser.id;
+            const isMe = String(t.userId) === String(state.currentUser.id);
             
             if (t.status === 'completed') {
                 tr.className = 'completed-row';
@@ -735,7 +735,7 @@ const renderDashboard = () => {
             div.className = 'list-item';
             if (t.status === 'missed-done') div.style.opacity = '0.7';
 
-            const isMe = t.userId === state.currentUser.id;
+            const isMe = String(t.userId) === String(state.currentUser.id);
 
             if (isMe) {
                 const isDone = t.status === 'missed-done';
@@ -802,7 +802,7 @@ const renderDashboard = () => {
             ${deletePBtn}
         `;
 
-        if (p.assigneeId === state.currentUser.id) myPunishmentsBody.appendChild(div);
+        if (String(p.assigneeId) === String(state.currentUser.id)) myPunishmentsBody.appendChild(div);
         else partnerPunishsmentBody.appendChild(div);
     });
 
