@@ -533,6 +533,19 @@ document.getElementById('form-assign-punish').addEventListener('submit', async (
 const renderDashboard = () => {
     if (!state.currentUser) return;
 
+    // Sync missed statuses before rendering to avoid UI flicker on refresh
+    const now = new Date();
+    let statusChanged = false;
+    state.tasks.forEach(t => {
+        if (t.status === 'pending' || t.status === 'active') {
+             if (new Date(t.deadline) < now) {
+                t.status = 'missed';
+                statusChanged = true;
+             }
+        }
+    });
+    if (statusChanged) saveTasks();
+
     // Safety check: ensure dashboard elements exist
     const myBoardTitle = document.getElementById('my-board-title');
     if (!myBoardTitle) return;

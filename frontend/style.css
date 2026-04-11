@@ -19,6 +19,21 @@
     font-family: 'Outfit', sans-serif;
 }
 
+.app-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+}
+
+.app-logo-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+}
+
 body {
     background-color: var(--bg-color);
     color: var(--text-main);

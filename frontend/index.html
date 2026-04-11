@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyLink Dual Dashboard</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -23,7 +24,8 @@
 
     <!-- PAGE: SETUP -->
     <div id="page-setup" class="container glass-panel active">
-        <header>
+        <header style="display:flex; flex-direction:column; align-items:center;">
+            <img src="favicon.png" alt="StudyLink Logo" class="app-logo-large">
             <h1 class="gradient-text">StudyLink Setup</h1>
             <p>You must authenticate and link your couple to access the dashboard.</p>
         </header>
@@ -87,7 +89,10 @@
     <!-- PAGE: DASHBOARD (50/50 Split) -->
     <div id="page-dashboard" class="dashboard-wrapper">
         <div class="top-nav glass-panel">
-            <h2>StudyLink Sync</h2>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <img src="favicon.png" alt="StudyLink Logo" class="app-logo">
+                <h2 style="margin:0;">StudyLink Sync</h2>
+            </div>
             <div id="nav-info"></div>
             <div style="display:flex; gap:10px;">
                 <button id="btn-add-task" class="primary-btn">+ Add My Task</button>
