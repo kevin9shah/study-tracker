@@ -9,7 +9,7 @@ from app.models.subject import Subject
 from sqlalchemy.orm import Session
 from app.db.databases import get_db
 
-from app.schemas.deadline import DeadlineCreate
+from app.schemas.deadline import DeadlineCreate, DeadlineUpdate
 
 
 router = APIRouter(prefix="/deadline", tags=["Deadline"])

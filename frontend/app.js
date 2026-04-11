@@ -499,13 +499,20 @@ const toggleTaskStatus = async (taskId, checked) => {
     // Ignore if not my task
     if (task.userId !== state.currentUser.id) return;
 
-    task.status = checked ? 'completed' : 'pending';
+    if (task.status === 'missed' || task.status === 'missed-done') {
+        task.status = checked ? 'missed-done' : 'missed';
+    } else {
+        task.status = checked ? 'completed' : 'pending';
+    }
+    
     saveTasks();
     renderDashboard();
 
     // Call API
     try {
+        // 2. If completed, also add a progress record
         if (checked) {
+
             await fetch(`${API_BASE}/progress/`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_id: state.currentUser.id, chapter_id: task.chapId, status: 'completed' })
@@ -659,7 +666,7 @@ const renderDashboard = () => {
 
     const calcProgress = (tasks) => {
         if (tasks.length === 0) return 0;
-        const completed = tasks.filter(t => t.status === 'completed').length;
+        const completed = tasks.filter(t => t.status === 'completed' || t.status === 'missed-done').length;
         return Math.round((completed / tasks.length) * 100);
     };
 
@@ -704,23 +711,38 @@ const renderDashboard = () => {
                 if (t.status === 'completed') partnerCompBody.appendChild(tr);
                 else partnerTBody.appendChild(tr);
             }
-        } else if (t.status === 'missed') {
+        } else if (t.status === 'missed' || t.status === 'missed-done') {
             const div = document.createElement('div');
             div.className = 'list-item';
+            if (t.status === 'missed-done') div.style.opacity = '0.7';
 
             const isMe = t.userId === state.currentUser.id;
 
             if (isMe) {
-                div.innerHTML = `<span><strong style="color:var(--danger)">Missed:</strong> ${t.subject} (Ch.${t.chapNum})</span> <span>Due: ${dStr}</span>`;
+                const isDone = t.status === 'missed-done';
+                div.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <input type="checkbox" class="task-checkbox" ${isDone ? 'checked' : ''} onchange="toggleTaskStatus('${t.id}', this.checked)">
+                        <span style="${isDone ? 'text-decoration:line-through;' : ''}"><strong style="color:var(--danger)">Missed:</strong> ${t.subject} (Ch.${t.chapNum})</span>
+                    </div>
+                    <span style="font-size:0.8rem; color:var(--text-muted)">Due: ${dStr}</span>
+                `;
                 myMissedBody.appendChild(div);
             } else {
+                const isPartnerDone = t.status === 'missed-done';
                 // Check if punishment already assigned
                 const pAssigned = state.punishments.some(p => String(p.taskId) === String(t.id));
                 const btnHtml = pAssigned
                     ? `<span style="color:var(--success)">Punished</span>`
                     : `<button class="danger-btn" style="padding:0.4em 0.8em;" onclick="assignPunishment('${t.id}', '${t.subject} - Ch.${t.chapNum}')">Assign Punishment</button>`;
 
-                div.innerHTML = `<span><strong>Missed:</strong> ${t.subject} (Ch.${t.chapNum})</span> ${btnHtml}`;
+                div.innerHTML = `
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                        <span style="${isPartnerDone ? 'text-decoration:line-through; opacity:0.6;' : ''}"><strong>Missed:</strong> ${t.subject} (Ch.${t.chapNum})</span>
+                        ${isPartnerDone ? '<span style="font-size:0.7rem; color:var(--success)">Finished late</span>' : ''}
+                    </div>
+                    ${btnHtml}
+                `;
                 partnerMissedBody.appendChild(div);
             }
         }
