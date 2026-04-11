@@ -178,12 +178,23 @@ const showMsg = (elId, msg, isError = false) => {
 };
 
 const switchPage = (pageId) => {
-    document.getElementById('page-setup').classList.remove('active');
-    document.getElementById('page-dashboard').classList.remove('active');
+    document.querySelectorAll('.app-page').forEach(p => p.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
 };
 
-const enterDashboard = () => {
+const enterDashboard = async () => {
+    // Refresh partner info to get current name
+    if (state.currentUser && state.partnerId) {
+        try {
+            const res = await fetch(`${API_BASE}/couple/status/${state.currentUser.id}`);
+            const data = await res.json();
+            if (data.linked && data.partner_name) {
+                state.partnerName = data.partner_name;
+                localStorage.setItem('studyLinkPartnerName', state.partnerName);
+            }
+        } catch (e) { console.error("Could not refresh partner name", e); }
+    }
+
     document.getElementById('nav-info').innerText = `Me (ID: ${state.currentUser.id}) | Partner (ID: ${state.partnerId})`;
     switchPage('page-dashboard');
     startDeadlineChecker();
