@@ -437,30 +437,43 @@ document.getElementById('form-task').addEventListener('submit', async (e) => {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: tSub, user_id: state.currentUser.id })
         });
+        if (!resSub.ok) {
+            const err = await resSub.json();
+            throw new Error(err.detail ? JSON.stringify(err.detail) : "Failed to create subject");
+        }
         let subData = await resSub.json();
-        const subId = subData.id || Math.floor(Math.random() * 1000); // fallback
+        const subId = subData.id;
 
         // 2. Chapter
         let resChap = await fetch(`${API_BASE}/chapter/`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ subject_id: subId, chapter_number: tChapNum, subject: tChapName })
         });
+        if (!resChap.ok) {
+            const err = await resChap.json();
+            throw new Error(err.detail ? JSON.stringify(err.detail) : "Failed to create chapter");
+        }
         let chapData = await resChap.json();
-        const chapId = chapData.id || Math.floor(Math.random() * 1000);
+        const chapId = chapData.id;
 
         // 3. Deadline
         let resDeadline = await fetch(`${API_BASE}/deadline/`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: state.currentUser.id, chapter_id: chapId, deadline_time: tDeadline.toISOString(), status: 'pending' })
         });
+        if (!resDeadline.ok) {
+            const err = await resDeadline.json();
+            throw new Error(err.detail ? JSON.stringify(err.detail) : "Failed to create deadline");
+        }
         let deadlineData = await resDeadline.json();
         const realTaskId = deadlineData.id;
 
         // Save local
         const task = {
-            id: realTaskId || ('t_' + Date.now()),
+            id: realTaskId,
             userId: state.currentUser.id,
-            chapId: chapId, // for progress update
+            chapId: chapId,
+
             subject: tSub,
             chapNum: tChapNum,
             chapName: tChapName,
