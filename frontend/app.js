@@ -533,11 +533,15 @@ document.getElementById('form-assign-punish').addEventListener('submit', async (
 const renderDashboard = () => {
     if (!state.currentUser) return;
 
+    // Safety check: ensure dashboard elements exist
+    const myBoardTitle = document.getElementById('my-board-title');
+    if (!myBoardTitle) return;
+
     // Personalized Headings
     const myName = state.currentUser.name || "Me";
     const partnerName = state.partnerName || "Partner";
 
-    document.getElementById('my-board-title').innerText = `${myName}'s Tracker`;
+    myBoardTitle.innerText = `${myName}'s Tracker`;
     document.getElementById('partner-board-title').innerText = `${partnerName}'s Tracker`;
 
     document.getElementById('my-missed-title').innerText = `${myName}'s Missed Deadlines`;
