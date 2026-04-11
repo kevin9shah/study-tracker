@@ -474,9 +474,10 @@ document.getElementById('form-task').addEventListener('submit', async (e) => {
         const chapId = chapData.id;
 
         // 3. Deadline
+        const localDeadline = document.getElementById('t-deadline').value; // Keep local string to avoid UTC shifts
         let resDeadline = await fetch(`${API_BASE}/deadline/`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: state.currentUser.id, chapter_id: chapId, deadline_time: tDeadline.toISOString(), status: 'pending' })
+            body: JSON.stringify({ user_id: state.currentUser.id, chapter_id: chapId, deadline_time: localDeadline, status: 'pending' })
         });
         if (!resDeadline.ok) {
             const err = await resDeadline.json();
@@ -490,12 +491,11 @@ document.getElementById('form-task').addEventListener('submit', async (e) => {
             id: realTaskId,
             userId: state.currentUser.id,
             chapId: chapId,
-
             subject: tSub,
             chapNum: tChapNum,
             chapName: tChapName,
-            deadline: tDeadline.toISOString(),
-            status: 'pending' // pending | completed | missed
+            deadline: localDeadline,
+            status: 'pending'
         };
         state.tasks.push(task);
         saveTasks();
@@ -527,15 +527,28 @@ const toggleTaskStatus = async (taskId, checked) => {
 
     // Call API
     try {
-        // 2. If completed, also add a progress record
         if (checked) {
-
-            await fetch(`${API_BASE}/progress/`, {
+            console.log("Adding progress record...");
+            const res = await fetch(`${API_BASE}/progress/`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_id: state.currentUser.id, chapter_id: task.chapId, status: 'completed' })
             });
+            if (!res.ok) console.error("Failed to add progress", await res.text());
+        } else {
+            console.log("Removing progress record...");
+            const res = await fetch(`${API_BASE}/progress/${state.currentUser.id}/${task.chapId}`, {
+                method: 'DELETE'
+            });
+            if (!res.ok) console.error("Failed to delete progress", await res.text());
         }
-    } catch (e) { console.error("API error", e); }
+        // Force a re-fetch of everything to be sure UI is in sync with DB truth
+        await fetchTasks();
+    } catch (e) { 
+        console.error("API error during status toggle:", e); 
+        // Revert local UI if API failed
+        task.status = checked ? (task.status === 'completed' ? 'pending' : 'missed') : (task.status === 'missed' ? 'missed-done' : 'completed');
+        renderDashboard();
+    }
 };
 
 const deleteTask = async (taskId) => {

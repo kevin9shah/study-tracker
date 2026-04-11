@@ -21,6 +21,19 @@ def create_progress(progress : ProgressCreate, db : Session = Depends(get_db)):
     user = db.query(User).filter(User.id == progress.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")    
+    
+    # Check if record already exists
+    existing_progress = db.query(Progress).filter(
+        Progress.user_id == progress.user_id,
+        Progress.chapter_id == progress.chapter_id
+    ).first()
+
+    if existing_progress:
+        existing_progress.status = progress.status
+        db.commit()
+        db.refresh(existing_progress)
+        return existing_progress
+
     new_progress = Progress(
         user_id = progress.user_id,
         chapter_id = progress.chapter_id,
@@ -34,3 +47,17 @@ def create_progress(progress : ProgressCreate, db : Session = Depends(get_db)):
 @router.get("/{user_id}")
 def get_user_progress(user_id: int, db: Session = Depends(get_db)):
     return db.query(Progress).filter(Progress.user_id == user_id).all()
+
+@router.delete("/{user_id}/{chapter_id}")
+def delete_progress(user_id: int, chapter_id: int, db: Session = Depends(get_db)):
+    # Use .delete() directly on the query to remove all matching records
+    deleted_count = db.query(Progress).filter(
+        Progress.user_id == user_id, 
+        Progress.chapter_id == chapter_id
+    ).delete()
+    
+    if deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Progress record not found")
+    
+    db.commit()
+    return {"message": f"Successfully removed {deleted_count} progress records"}
