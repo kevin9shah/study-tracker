@@ -413,10 +413,35 @@ button {
     position: fixed;
     bottom: 25px;
     right: 25px;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     display: flex;
-    gap: 3px;
+    gap: 5px;
     z-index: 1000;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 10px 18px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    animation: float-decor 6s ease-in-out infinite;
+    cursor: default;
+    user-select: none;
+}
+
+.bottom-right-decor span {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.3));
+}
+
+.bottom-right-decor span:hover {
+    transform: scale(1.4) rotate(10deg);
+    filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.6));
+}
+
+@keyframes float-decor {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
 }
 
 .footer-branding {
