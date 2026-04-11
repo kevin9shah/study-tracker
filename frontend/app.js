@@ -68,28 +68,45 @@ const loadLocalState = () => {
 const fetchTasks = async () => {
     if (!state.currentUser || !state.partnerId) return;
     try {
-        const res1 = await fetch(`${API_BASE}/deadline/${state.currentUser.id}`);
-        const myTasks = await res1.json();
-        console.log("My Tasks from DB:", myTasks);
+        const [res1, res2, resProg1, resProg2] = await Promise.all([
+            fetch(`${API_BASE}/deadline/${state.currentUser.id}`),
+            fetch(`${API_BASE}/deadline/${state.partnerId}`),
+            fetch(`${API_BASE}/progress/${state.currentUser.id}`),
+            fetch(`${API_BASE}/progress/${state.partnerId}`)
+        ]);
 
-        const res2 = await fetch(`${API_BASE}/deadline/${state.partnerId}`);
+        const myTasks = await res1.json();
         const partnerTasks = await res2.json();
-        console.log("Partner ID:", state.partnerId, "Partner Tasks from DB:", partnerTasks);
+        const myProg = await resProg1.json();
+        const partnerProg = await resProg2.json();
+
+        // Map chapter ID to completion status for persistence
+        const completedChapters = new Set([
+            ...myProg.filter(p => p.status === 'completed').map(p => p.chapter_id),
+            ...partnerProg.filter(p => p.status === 'completed').map(p => p.chapter_id)
+        ]);
 
         // Map backend tasks to frontend state format
-        const mapTask = (t) => ({
-            id: t.id,
-            userId: t.user_id,
-            chapId: t.chapter_id,
-            subject: t.subject,
-            chapNum: t.chapter_number,
-            chapName: t.chapter_name || `Chapter ${t.chapter_number}`,
-            deadline: t.deadline_time,
-            status: t.status
-        });
+        const mapTask = (t) => {
+            let status = t.status;
+            if (completedChapters.has(t.chapter_id)) {
+                if (status === 'missed') status = 'missed-done';
+                else if (status === 'pending' || status === 'active') status = 'completed';
+            }
+
+            return {
+                id: t.id,
+                userId: t.user_id,
+                chapId: t.chapter_id,
+                subject: t.subject,
+                chapNum: t.chapter_number,
+                chapName: t.chapter_name || `Chapter ${t.chapter_number}`,
+                deadline: t.deadline_time,
+                status: status
+            };
+        };
 
         const allTasks = [...myTasks.map(mapTask), ...partnerTasks.map(mapTask)];
-        console.log("Total mapped tasks:", allTasks);
         state.tasks = allTasks;
         saveTasks();
         renderDashboard();

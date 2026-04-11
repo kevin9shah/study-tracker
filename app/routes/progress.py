@@ -31,4 +31,6 @@ def create_progress(progress : ProgressCreate, db : Session = Depends(get_db)):
     db.commit() 
     db.refresh(new_progress)
     return new_progress
-
+@router.get("/{user_id}")
+def get_user_progress(user_id: int, db: Session = Depends(get_db)):
+    return db.query(Progress).filter(Progress.user_id == user_id).all()
