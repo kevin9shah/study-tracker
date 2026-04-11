@@ -130,22 +130,21 @@ const startCoupleStatusPolling = () => {
 const fetchPunishments = async () => {
     if (!state.currentUser || !state.partnerId) return;
     try {
-        // Fetch punishments for me
-        const res1 = await fetch(`${API_BASE}/punishment/${state.currentUser.id}`);
+        const [res1, res2] = await Promise.all([
+            fetch(`${API_BASE}/punishment/${state.currentUser.id}`),
+            fetch(`${API_BASE}/punishment/${state.partnerId}`)
+        ]);
+        
         const myPuns = await res1.json();
-
-        // Fetch punishments for partner
-        const res2 = await fetch(`${API_BASE}/punishment/${state.partnerId}`);
         const partnerPuns = await res2.json();
 
-        // Merge into state with assigner info inferred
         const allPuns = [
             ...myPuns.map(p => ({
                 id: p.id,
                 assigneeId: state.currentUser.id,
                 assignerId: state.partnerId,
                 title: p.title,
-                taskId: p.task_id, // Link to missed task
+                taskId: p.task_id, 
                 status: p.status
             })),
             ...partnerPuns.map(p => ({
@@ -153,7 +152,7 @@ const fetchPunishments = async () => {
                 assigneeId: state.partnerId,
                 assignerId: state.currentUser.id,
                 title: p.title,
-                taskId: p.task_id, // Link to missed task
+                taskId: p.task_id,
                 status: p.status
             }))
         ];
@@ -370,9 +369,9 @@ document.getElementById('form-join-couple').addEventListener('submit', async (e)
 const logoutFunction = () => {
     localStorage.removeItem('studyLinkUser');
     localStorage.removeItem('studyLinkPartnerId');
+    localStorage.removeItem('studyLinkPartnerName');
     localStorage.removeItem('studyLinkTasks');
     localStorage.removeItem('studyLinkPunishments');
-    // Also clear standard user DB if needed or just reload
     location.reload();
 };
 
@@ -380,7 +379,7 @@ document.getElementById('btn-logout').addEventListener('click', logoutFunction);
 document.getElementById('btn-logout-setup').addEventListener('click', logoutFunction);
 
 document.getElementById('btn-delete-couple').addEventListener('click', async () => {
-    if (confirm("Are you sure you want to unpair from this partner?")) {
+    if (confirm("Are you sure you want to unpair from this partner? This will reset your dashboard.")) {
         try {
             const res = await fetch(`${API_BASE}/couple/delete`, {
                 method: 'DELETE',
@@ -392,7 +391,11 @@ document.getElementById('btn-delete-couple').addEventListener('click', async () 
 
             // Wipe partner link
             localStorage.removeItem('studyLinkPartnerId');
+            localStorage.removeItem('studyLinkPartnerName');
+            localStorage.removeItem('studyLinkTasks');
+            localStorage.removeItem('studyLinkPunishments');
             state.partnerId = null;
+            state.partnerName = null;
             location.reload();
         } catch (err) {
             alert(err.message);
