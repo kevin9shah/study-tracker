@@ -409,10 +409,10 @@ button {
 }
 
 /* CUSTOM BRANDING */
-.top-left-decor {
+.bottom-right-decor {
     position: fixed;
-    top: 25px;
-    left: 25px;
+    bottom: 25px;
+    right: 25px;
     font-size: 1.2rem;
     display: flex;
     gap: 5px;
