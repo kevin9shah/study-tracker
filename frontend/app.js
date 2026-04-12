@@ -755,9 +755,9 @@ const renderDashboard = () => {
                 div.innerHTML = `
                     <div style="display:flex; align-items:center; gap:12px;">
                         <input type="checkbox" class="task-checkbox" ${isDone ? 'checked' : ''} onchange="toggleTaskStatus('${t.id}', this.checked)">
-                        <span style="${isDone ? 'text-decoration:line-through;' : ''}"><strong style="color:var(--danger)">Missed:</strong> ${t.subject} (Ch.${t.chapNum})</span>
+                        <span style="${isDone ? 'text-decoration:line-through;' : ''}"><strong class="hud-alert-text">MISSED:</strong> ${t.subject} (Ch.${t.chapNum})</span>
                     </div>
-                    <span style="font-size:0.8rem; color:var(--text-muted)">Due: ${dStr}</span>
+                    <span style="font-size:0.8rem; color:#555">Due: ${dStr}</span>
                 `;
                 myMissedBody.appendChild(div);
             } else {
@@ -770,8 +770,8 @@ const renderDashboard = () => {
 
                 div.innerHTML = `
                     <div style="display:flex; flex-direction:column; gap:2px;">
-                        <span style="${isPartnerDone ? 'text-decoration:line-through; opacity:0.6;' : ''}"><strong>Missed:</strong> ${t.subject} (Ch.${t.chapNum})</span>
-                        ${isPartnerDone ? '<span style="font-size:0.7rem; color:var(--success)">Finished late</span>' : ''}
+                        <span style="${isPartnerDone ? 'text-decoration:line-through; opacity:0.6;' : ''}"><strong class="hud-alert-text">MISSED:</strong> ${t.subject} (Ch.${t.chapNum})</span>
+                        ${isPartnerDone ? '<span style="font-size:0.7rem; color:var(--hud-green)">Finished late</span>' : ''}
                     </div>
                     ${btnHtml}
                 `;

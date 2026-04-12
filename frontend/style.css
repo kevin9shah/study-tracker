@@ -164,7 +164,18 @@ input:focus { border-color: var(--hud-blue); box-shadow: var(--glow-blue); }
 
 .stat-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .stat-box { padding: 12px; background: rgba(0,0,0,0.2); border-top: 2px solid #222; }
-.stat-box label { font-size: 0.6rem; color: #333; font-weight: 900; display: block; margin-bottom: 8px; }
+.stat-box label { 
+    font-size: 0.9rem; 
+    color: #fff; 
+    font-weight: 900; 
+    display: inline-block; 
+    margin-bottom: 12px; 
+    border-bottom: 2px solid var(--hud-red);
+    letter-spacing: 1px;
+}
+.stat-box.yellow-warn label { border-color: var(--hud-yellow); }
+
+.hud-alert-text { color: var(--hud-yellow); font-weight: 900; text-shadow: 0 0 5px rgba(255, 204, 0, 0.5); }
 .mini-hud-list { display: flex; flex-direction: column; gap: 5px; }
 .list-item { 
     background: #000; 
