@@ -788,25 +788,28 @@ const renderDashboard = () => {
         const div = document.createElement('div');
         div.className = 'list-item';
 
-        const isMine = p.assignerId === state.currentUser.id;
+        const isMine = String(p.assignerId) === String(state.currentUser.id);
+        const isAssignee = String(p.assigneeId) === String(state.currentUser.id);
 
         let deletePBtn = "";
+        let actionBtn = ""; // Declare here so it exists for all paths
+
         if (isMine) {
-            deletePBtn = `<button class="danger-btn" style="padding:0.4rem 0.6rem; font-size:0.8rem; margin-left:8px;" onclick="deletePunishment(${p.id})">🗑️</button>`;
+            deletePBtn = `<button class="hud-text-btn" style="color:var(--hud-red); margin-left:8px;" onclick="deletePunishment(${p.id})">🗑️</button>`;
             if (p.status === 'completed') {
-                actionBtn = `<button class="danger-btn" style="padding:0.4rem 0.8rem; font-size:0.8rem;" onclick="togglePunishment(${p.id})">Undo</button>`;
+                actionBtn = `<button class="hud-secondary-btn" style="padding:4px 8px; font-size:0.7rem;" onclick="togglePunishment(${p.id})">Undo</button>`;
             } else {
-                actionBtn = `<button class="success-btn" style="padding:0.4rem 0.8rem;" onclick="togglePunishment(${p.id})">Mark Done</button>`;
+                actionBtn = `<button class="hud-primary-btn" style="padding:4px 8px; font-size:0.7rem; width:auto;" onclick="togglePunishment(${p.id})">Mark Done</button>`;
             }
         }
 
         const statusLabel = p.status === 'completed'
-            ? `<span style="color:var(--success)">Completed ✅</span>`
-            : `<span style="color:var(--text-muted)">Assigned</span>`;
+            ? `<span style="color:var(--hud-green)">STAGED_DONE ✅</span>`
+            : `<span style="color:#555">ACTIVE_ASSIGNMENT</span>`;
 
         div.innerHTML = `
             <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
-                <span style="color:var(--danger); font-weight:600;">🔥 ${p.title}</span>
+                <span style="color:var(--hud-red); font-weight:700; font-size:0.8rem;">[!] ${p.title}</span>
                 <div style="display:flex; align-items:center; gap:10px;">
                     ${statusLabel}
                     ${actionBtn}
@@ -815,7 +818,7 @@ const renderDashboard = () => {
             ${deletePBtn}
         `;
 
-        if (String(p.assigneeId) === String(state.currentUser.id)) myPunishmentsBody.appendChild(div);
+        if (isAssignee) myPunishmentsBody.appendChild(div);
         else partnerPunishsmentBody.appendChild(div);
     });
 

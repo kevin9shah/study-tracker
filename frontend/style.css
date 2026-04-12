@@ -109,8 +109,15 @@ button { cursor: pointer; text-transform: uppercase; font-weight: 800; border: n
 
 .hud-primary-btn { background: var(--hud-blue); color: #000; padding: 15px; width: 100%; }
 .hud-primary-btn:hover { background: #fff; box-shadow: var(--glow-blue); }
+
 .hud-success-btn { background: var(--hud-green); color: #000; padding: 15px; width: 100%; }
-.hud-secondary-btn { background: #222; color: #fff; padding: 10px 20px; }
+.hud-danger-btn { background: var(--hud-red); color: #fff; padding: 15px; width: 100%; }
+
+.hud-secondary-btn { background: #222; color: #fff; padding: 10px 20px; border: 1px solid #333; }
+.hud-secondary-btn:hover { border-color: #555; }
+
+.hud-text-btn { background: transparent; color: #555; font-size: 0.7rem; padding: 5px; }
+.hud-text-btn:hover { color: #fff; }
 
 /* DASHBOARD TOP BAR */
 .top-hud-bar {
