@@ -61,10 +61,20 @@ def get_user_deadlines(user_id: int, db: Session = Depends(get_db)):
 
 @router.delete("/{deadline_id}")
 def delete_deadline(deadline_id: int, db: Session = Depends(get_db)):
+    from app.models.punishment import Punishment
     deadline = db.query(Deadline).filter(Deadline.id == deadline_id).first()
     if not deadline:
         raise HTTPException(status_code=404, detail="Deadline not found")
     
-    db.delete(deadline)
-    db.commit()
+    try:
+        # Before deleting the deadline, update any punishments that reference it
+        # to have task_id = NULL so the foreign key constraint doesn't fail.
+        db.query(Punishment).filter(Punishment.task_id == deadline_id).update({Punishment.task_id: None})
+        
+        db.delete(deadline)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+        
     return {"message": "Deadline deleted successfully"}
