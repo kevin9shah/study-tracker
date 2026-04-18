@@ -54,10 +54,3 @@ app.include_router(couple.router)
 def root():
     return {"message": "Backend running 🚀"}
 
-@app.get("/health")
-def health():
-    return {"status": "OK"}
-
-@app.get("/db-test")
-def db_test():
-    return {"db": "connected"}

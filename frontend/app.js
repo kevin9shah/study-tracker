@@ -1,5 +1,5 @@
-const API_BASE = "https://study-tracker-o508.onrender.com";
-
+// const API_BASE = "https://study-tracker-o508.onrender.com";
+const API_BASE = "http://127.0.0.1:8000";
 let state = {
     currentUser: null,
     partnerId: null,
@@ -612,12 +612,12 @@ document.getElementById('form-assign-punish').addEventListener('submit', async (
             })
         });
 
-        const data = await res.json(); // ✅ correct placement
+        const data = await res.json(); // correct placement
 
         if (!res.ok) throw new Error(data.detail || "Error assigning punishment");
 
         state.punishments.push({
-            id: data.id,   // ✅ real DB id
+            id: data.id,   // real DB id
             assigneeId: state.partnerId,
             assignerId: state.currentUser.id,
             title: title,
@@ -724,9 +724,9 @@ const renderDashboard = () => {
                 else partnerAnyCompleted = true;
             }
 
-            const ck = isMe ? `<input type="checkbox" class="task-checkbox" ${t.status === 'completed' ? 'checked' : ''} onchange="toggleTaskStatus('${t.id}', this.checked)">` : (t.status === 'completed' ? '✅' : '◻️');
+            const ck = isMe ? `<input type="checkbox" class="task-checkbox" ${t.status === 'completed' ? 'checked' : ''} onchange="toggleTaskStatus('${t.id}', this.checked)">` : (t.status === 'completed' ? 'Done' : 'Pending');
             
-            const deleteBtn = isMe ? `<button class="danger-btn" style="padding:0.4rem 0.6rem; font-size:0.8rem;" onclick="deleteTask(${t.id})">🗑️</button>` : '';
+            const deleteBtn = isMe ? `<button class="danger-btn" style="padding:0.4rem 0.6rem; font-size:0.8rem;" onclick="deleteTask(${t.id})">Delete</button>` : '';
 
             tr.innerHTML = `
                 <td>${ck}</td>
@@ -755,7 +755,7 @@ const renderDashboard = () => {
                 div.innerHTML = `
                     <div style="display:flex; align-items:center; gap:12px;">
                         <input type="checkbox" class="task-checkbox" ${isDone ? 'checked' : ''} onchange="toggleTaskStatus('${t.id}', this.checked)">
-                        <span style="${isDone ? 'text-decoration:line-through;' : ''}"><strong class="hud-alert-text">MISSED:</strong> ${t.subject} (Ch.${t.chapNum})</span>
+                        <span style="${isDone ? 'text-decoration:line-through;' : ''}"><strong class="hud-alert-text">Missed:</strong> ${t.subject} (Ch.${t.chapNum})</span>
                     </div>
                     <span style="font-size:0.8rem; color:#555">Due: ${dStr}</span>
                 `;
@@ -770,7 +770,7 @@ const renderDashboard = () => {
 
                 div.innerHTML = `
                     <div style="display:flex; flex-direction:column; gap:2px;">
-                        <span style="${isPartnerDone ? 'text-decoration:line-through; opacity:0.6;' : ''}"><strong class="hud-alert-text">MISSED:</strong> ${t.subject} (Ch.${t.chapNum})</span>
+                        <span style="${isPartnerDone ? 'text-decoration:line-through; opacity:0.6;' : ''}"><strong class="hud-alert-text">Missed:</strong> ${t.subject} (Ch.${t.chapNum})</span>
                         ${isPartnerDone ? '<span style="font-size:0.7rem; color:var(--hud-green)">Finished late</span>' : ''}
                     </div>
                     ${btnHtml}
@@ -795,7 +795,7 @@ const renderDashboard = () => {
         let actionBtn = ""; // Declare here so it exists for all paths
 
         if (isMine) {
-            deletePBtn = `<button class="hud-text-btn" style="color:var(--hud-red); margin-left:8px;" onclick="deletePunishment(${p.id})">🗑️</button>`;
+            deletePBtn = `<button class="hud-text-btn" style="color:var(--hud-red); margin-left:8px;" onclick="deletePunishment(${p.id})">Delete</button>`;
             if (p.status === 'completed') {
                 actionBtn = `<button class="hud-secondary-btn" style="padding:4px 8px; font-size:0.7rem;" onclick="togglePunishment(${p.id})">Undo</button>`;
             } else {
@@ -804,12 +804,12 @@ const renderDashboard = () => {
         }
 
         const statusLabel = p.status === 'completed'
-            ? `<span style="color:var(--hud-green)">STAGED_DONE ✅</span>`
-            : `<span style="color:#555">ACTIVE_ASSIGNMENT</span>`;
+            ? `<span style="color:var(--hud-green)">Completed</span>`
+            : `<span style="color:#555">Active</span>`;
 
         div.innerHTML = `
             <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
-                <span style="color:var(--hud-red); font-weight:700; font-size:0.8rem;">[!] ${p.title}</span>
+                <span style="color:var(--hud-red); font-weight:700; font-size:0.8rem;">! ${p.title}</span>
                 <div style="display:flex; align-items:center; gap:10px;">
                     ${statusLabel}
                     ${actionBtn}
@@ -822,7 +822,7 @@ const renderDashboard = () => {
         else partnerPunishsmentBody.appendChild(div);
     });
 
-    if (myMissedBody.innerHTML === '') myMissedBody.innerHTML = `<p class="small-text">No missed deadlines! Keep it up. ✨</p>`;
+    if (myMissedBody.innerHTML === '') myMissedBody.innerHTML = `<p class="small-text">No missed deadlines! Keep it up.</p>`;
     if (partnerMissedBody.innerHTML === '')
         partnerMissedBody.innerHTML = `<p class="small-text">No missed deadlines.</p>`;
 };
