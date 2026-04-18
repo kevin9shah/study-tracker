@@ -160,7 +160,6 @@ input {
 
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) brightness(0.8);
     cursor: pointer;
 }
 
