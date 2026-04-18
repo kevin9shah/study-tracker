@@ -856,3 +856,55 @@ const startDeadlineChecker = () => {
         }
     }, 10000); // checking every 10s for demo purposes
 };
+
+/* --- CUSTOM CURSOR LOGIC --- */
+const cursorDot = document.getElementById("cursor-dot");
+const cursorRing = document.getElementById("cursor-ring");
+
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+let ringX = mouseX;
+let ringY = mouseY;
+
+document.addEventListener("mousemove", (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    
+    if (cursorDot) {
+        cursorDot.style.left = mouseX + "px";
+        cursorDot.style.top = mouseY + "px";
+    }
+});
+
+const renderCursor = () => {
+    // Lerp for smooth magnetic trailing effect
+    ringX += (mouseX - ringX) * 0.15;
+    ringY += (mouseY - ringY) * 0.15;
+    
+    if (cursorRing) {
+        cursorRing.style.left = ringX + "px";
+        cursorRing.style.top = ringY + "px";
+    }
+    
+    requestAnimationFrame(renderCursor);
+};
+requestAnimationFrame(renderCursor);
+
+// Hover magnetics & morphing
+document.addEventListener("mouseover", (e) => {
+    const isInteractive = e.target.closest('button, a, input, .hud-tab, .task-checkbox, .player-icon, .hud-ctrl-btn, .hud-text-btn, .danger-btn');
+    
+    if (isInteractive && cursorRing && cursorDot) {
+        cursorRing.style.width = '55px';
+        cursorRing.style.height = '55px';
+        cursorRing.style.backgroundColor = 'rgba(124, 58, 237, 0.15)';
+        cursorRing.style.borderColor = 'var(--primary-light)';
+        cursorDot.style.transform = 'translate(-50%, -50%) scale(1.5)';
+    } else if (cursorRing && cursorDot) {
+        cursorRing.style.width = '32px';
+        cursorRing.style.height = '32px';
+        cursorRing.style.backgroundColor = 'transparent';
+        cursorRing.style.borderColor = 'rgba(124, 58, 237, 0.4)';
+        cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
+    }
+});
