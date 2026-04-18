@@ -36,7 +36,9 @@ body {
 /* Visibility Control */
 .app-page { display: none !important; opacity: 0; transition: opacity 0.3s ease; }
 .app-page.active { display: block !important; opacity: 1; }
+#page-setup.active { display: flex !important; }
 .dashboard-hud.active { display: flex !important; flex-direction: column; opacity: 1; min-height: 100vh; }
+.auth-panel, .setup-block { display: none; }
 .auth-panel.active, .setup-block.active { display: block !important; }
 .display-none { display: none !important; }
 
