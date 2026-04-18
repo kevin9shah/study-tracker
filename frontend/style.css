@@ -1,15 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --bg-dark: #0a0a1a;
-    --bg-card: #13132b;
+    --bg-dark: #22242c;
+    --bg-card: #22242c;
     --primary: #7c3aed; /* Purple */
     --primary-light: #a78bfa;
     --accent-blue: #60a5fa;
     --accent-pink: #f472b6;
     --text-main: #ffffff;
     --text-muted: rgba(255, 255, 255, 0.6);
-    --border: rgba(255, 255, 255, 0.08);
+    --border: transparent; /* Neumorphism relies on shadows, not borders */
+    --shadow-light: rgba(255, 255, 255, 0.05);
+    --shadow-dark: rgba(0, 0, 0, 0.6);
     --font-main: 'Plus Jakarta Sans', sans-serif;
     
     /* Legacy variables for compatibility with app.js inline styles */
@@ -48,7 +50,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: radial-gradient(circle at 50% -20%, #2e1065, var(--bg-dark) 60%);
+    background: var(--bg-dark);
 }
 
 .setup-frame {
@@ -85,10 +87,10 @@ body {
 
 .hud-card {
     background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
+    border: none;
+    border-radius: 20px;
     padding: 2.5rem 2rem;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
 }
 
 .panel-tabs {
@@ -132,89 +134,101 @@ body {
 
 input {
     width: 100%;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    background: var(--bg-card);
+    border: none;
+    border-radius: 12px;
     padding: 14px 16px;
     color: var(--text-main);
     font-size: 1rem;
     transition: all 0.2s;
+    box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
 }
 
 input:focus {
     outline: none;
-    border-color: var(--primary);
-    background: rgba(255,255,255,0.06);
+    box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+    color: var(--primary-light);
 }
 
 .hud-primary-btn {
     background: linear-gradient(135deg, var(--primary), #9333ea);
     color: #fff;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 16px;
     width: 100%;
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
+    box-shadow: 6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .hud-primary-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+    box-shadow: 8px 8px 18px var(--shadow-dark), -8px -8px 18px var(--shadow-light);
+}
+.hud-primary-btn:active {
+    transform: translateY(1px);
+    box-shadow: inset 4px 4px 8px rgba(0,0,0,0.3);
 }
 
 .hud-success-btn {
     background: linear-gradient(135deg, var(--accent-blue), #3b82f6);
     color: #fff;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 16px;
     width: 100%;
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
-    transition: transform 0.2s;
+    box-shadow: 6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
-.hud-success-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(96, 165, 250, 0.4); }
+.hud-success-btn:hover { transform: translateY(-2px); box-shadow: 8px 8px 18px var(--shadow-dark), -8px -8px 18px var(--shadow-light); }
+.hud-success-btn:active { transform: translateY(1px); box-shadow: inset 4px 4px 8px rgba(0,0,0,0.3); }
 
 .hud-danger-btn {
     background: linear-gradient(135deg, var(--accent-pink), #e11d48);
     color: #fff;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 16px;
     width: 100%;
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
+    box-shadow: 6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
+.hud-danger-btn:active { transform: translateY(1px); box-shadow: inset 4px 4px 8px rgba(0,0,0,0.3); }
 
 .hud-secondary-btn {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
+    background: var(--bg-card);
+    color: var(--text-main);
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 10px 16px;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
+    transition: all 0.2s;
 }
 
-.hud-secondary-btn:hover { background: rgba(255,255,255,0.15); }
+.hud-secondary-btn:active { box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); }
 
 /* Dashboard Nav */
 .top-hud-bar {
     height: 70px;
-    background: rgba(10, 10, 26, 0.8);
-    backdrop-filter: blur(12px);
+    background: var(--bg-card);
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 2rem;
-    border-bottom: 1px solid var(--border);
+    border: none;
+    box-shadow: 0 8px 16px var(--shadow-dark);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -234,12 +248,13 @@ input:focus {
 
 .couple-stat-pill {
     background: var(--bg-card);
-    border: 1px solid var(--border);
+    border: none;
     border-radius: 20px;
     padding: 6px 16px;
     display: flex;
     align-items: center;
     gap: 12px;
+    box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
 }
 .pill-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
 .pill-progress-bg { width: 100px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
@@ -247,19 +262,20 @@ input:focus {
 
 .bar-right { display: flex; gap: 1rem; }
 .hud-ctrl-btn { 
-    background: transparent; 
-    border: 1px solid var(--border); 
-    border-radius: 8px; 
+    background: var(--bg-card);
+    border: none;
+    border-radius: 12px;
     color: var(--text-main); 
     padding: 8px 16px; 
     font-size: 0.85rem; 
     font-weight: 600; 
     cursor: pointer; 
+    box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
     transition: all 0.2s;
 }
-.hud-ctrl-btn:hover { background: rgba(255,255,255,0.05); }
-.hud-ctrl-btn.blue { background: rgba(96, 165, 250, 0.1); border-color: rgba(96, 165, 250, 0.3); color: var(--accent-blue); }
-.hud-ctrl-btn.red { background: rgba(244, 114, 182, 0.1); border-color: rgba(244, 114, 182, 0.3); color: var(--accent-pink); }
+.hud-ctrl-btn:active { box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); }
+.hud-ctrl-btn.blue { color: var(--accent-blue); }
+.hud-ctrl-btn.red { color: var(--accent-pink); }
 
 /* Dashboard Layout */
 .hud-main-grid {
@@ -274,12 +290,13 @@ input:focus {
 
 .hud-sector {
     background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
+    border: none;
+    border-radius: 20px;
     padding: 2rem;
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
 }
 
 .sector-header {
@@ -298,13 +315,13 @@ input:focus {
     justify-content: center;
     font-size: 1.5rem;
     font-weight: 800;
-    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
+    box-shadow: 6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
     position: relative;
 }
 
 .player-icon.partner {
     background: linear-gradient(135deg, var(--accent-pink), #be185d);
-    box-shadow: 0 8px 24px rgba(244, 114, 182, 0.3);
+    box-shadow: 6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
 }
 
 .player-icon.offline {
@@ -377,9 +394,10 @@ input:focus {
 }
 .hb-bg {
     flex: 1;
-    height: 6px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 3px;
+    height: 8px;
+    background: var(--bg-card);
+    border-radius: 4px;
+    box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
     overflow: hidden;
 }
 .hb-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); width: 0%;}
@@ -401,10 +419,11 @@ input:focus {
 
 /* Tables */
 .hud-table-container {
-    background: rgba(0,0,0,0.2);
-    border-radius: 12px;
+    background: var(--bg-card);
+    border-radius: 16px;
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: none;
+    box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
 }
 
 .hud-table { width: 100%; border-collapse: collapse; }
@@ -443,14 +462,18 @@ input:focus {
     appearance: none; 
     width: 20px; 
     height: 20px; 
-    border: 2px solid rgba(255,255,255,0.2); 
+    border: none;
     border-radius: 6px;
     cursor: pointer; 
     transition: all 0.2s;
-    background: transparent;
+    background: var(--bg-card);
+    box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+.task-checkbox:active {
+    box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
 }
 .task-checkbox:checked { 
     background: var(--primary); 
@@ -473,10 +496,11 @@ input:focus {
 }
 
 .stat-box {
-    background: rgba(0,0,0,0.2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    background: var(--bg-card);
+    border: none;
+    border-radius: 16px;
     padding: 1.5rem;
+    box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
 }
 
 .stat-box label {
@@ -491,14 +515,15 @@ input:focus {
 
 .mini-hud-list { display: flex; flex-direction: column; gap: 8px; }
 .list-item {
-    background: rgba(255,255,255,0.03);
-    border-radius: 8px;
+    background: var(--bg-card);
+    border-radius: 12px;
     padding: 12px 16px;
     font-size: 0.9rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     color: var(--text-main);
+    box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
 }
 .hud-alert-text { color: var(--accent-pink); font-weight: 700; }
 
@@ -529,7 +554,7 @@ input:focus {
     background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); 
     z-index: 3000; display: none; align-items: center; justify-content: center; 
 }
-.modal-card { width: 100%; max-width: 480px; background: var(--bg-card); border-radius: 16px; padding: 2rem; border: 1px solid var(--border); }
+.modal-card { width: 100%; max-width: 480px; background: var(--bg-card); border-radius: 20px; padding: 2rem; border: none; box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light); }
 .modal-card h2 { margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 500; }
 .modal-btns { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
 
@@ -544,13 +569,14 @@ input:focus {
     display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;
 }
 .link-node {
-    background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px;
+    background: var(--bg-card); border: none; padding: 1.5rem; border-radius: 16px;
+    box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
 }
 .link-node h3 { font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;}
 .mini-form { display: flex; gap: 8px;}
 .mini-form input { padding: 8px 12px; font-size: 0.85rem; flex: 1; }
-.my-id-box { background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.2); padding: 1rem; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
-.code-box { background: #000; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 1.2rem; text-align: center; color: var(--primary-light); margin-top: 1rem; }
+.my-id-box { background: var(--bg-card); border: none; padding: 1rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); }
+.code-box { background: var(--bg-card); padding: 1rem; border-radius: 12px; font-family: monospace; font-size: 1.2rem; text-align: center; color: var(--primary-light); margin-top: 1rem; box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); }
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
 .card-header h2 { font-size: 1.5rem; font-weight: 500;}
 

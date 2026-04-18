@@ -658,9 +658,17 @@ const renderDashboard = () => {
     const myBoardTitle = document.getElementById('my-board-title');
     if (!myBoardTitle) return;
 
-    // Personalized Headings
+    // Personalized Headings & Icons
     const myName = state.currentUser.name || "Me";
     const partnerName = state.partnerName || "Partner";
+    
+    const myInitial = myName.charAt(0).toUpperCase();
+    const partnerInitial = partnerName.charAt(0).toUpperCase();
+    
+    const myIcon = document.getElementById('my-player-icon');
+    const partnerIcon = document.getElementById('partner-player-icon');
+    if (myIcon) myIcon.innerHTML = `${myInitial}<div class="pulsing-dot" id="my-status-dot"></div>`;
+    if (partnerIcon) partnerIcon.innerHTML = `${partnerInitial}<div class="pulsing-dot display-none" id="partner-status-dot"></div>`;
 
     myBoardTitle.innerText = `${myName}'s Tracker`;
     document.getElementById('partner-board-title').innerText = `${partnerName}'s Tracker`;
