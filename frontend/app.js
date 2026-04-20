@@ -1,5 +1,6 @@
 const API_BASE = "https://study-tracker-o508.onrender.com";
 // const API_BASE = "http://127.0.0.1:8000";
+window.isFullySynchronized = false;
 let state = {
     currentUser: null,
     partnerId: null,
@@ -10,11 +11,13 @@ let state = {
     punishments: [],
     rewards: [],
     sounds: {
-        reward: new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3'),
+        reward: new Audio('https://cdn.pixabay.com/audio/2021/11/12/audio_1876800d5a.mp3'), // Magic shimmer
         message: new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_2ea93d6c1f.mp3'),
         photo: new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_c8de304250.mp3'),
-        punishment: new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_12b7950bed.mp3'),
-        fanfare: new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3') // Placeholder, using reward sound for now
+        punishment: new Audio('https://cdn.pixabay.com/audio/2024/02/10/audio_8b27341995.mp3'), // Warning buzz
+        fanfare: new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3'),
+        unlock: new Audio('https://cdn.pixabay.com/audio/2022/03/24/audio_73d23f7902.mp3'), // Sparkle unlock
+        click: new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_2ea93d6c1f.mp3')
     }
 };
 
@@ -328,7 +331,7 @@ const fetchActivity = async () => {
 
         const syncLabel = document.getElementById('sync-status-label');
         const syncFill = document.getElementById('sync-progress-fill');
-        const syncPill = document.querySelector('.couple-stat-pill');
+        const syncPill = document.getElementById('sync-pill');
         if (syncLabel && syncFill && syncPill) {
             syncLabel.innerText = syncText;
             syncFill.style.width = `${syncLevel}%`;
@@ -338,6 +341,12 @@ const fetchActivity = async () => {
             } else {
                 syncPill.classList.remove('sync-glow');
                 window.isFullySynchronized = false;
+                document.body.classList.remove('active-celebration');
+                document.querySelectorAll('.phantom-emoji').forEach(el => el.remove());
+                if (window.fairyDustInterval) {
+                    clearInterval(window.fairyDustInterval);
+                    delete window.fairyDustInterval;
+                }
             }
         }
     } catch (err) {
@@ -362,6 +371,7 @@ const startActivityPolling = () => {
         
         // Fetch statuses
         fetchActivity();
+        fetchDailyImage(); // Poll for new mystery photos
     }, 60000); // every 1 min
 };
 
@@ -965,6 +975,7 @@ const renderDashboard = () => {
             }).then(() => {
                 pImg.style.filter = 'none';
                 document.getElementById('partner-mystery-lock').style.display = 'none';
+                playSound('unlock');
             }).catch(e => console.error(e));
         }
     }
@@ -1188,16 +1199,16 @@ const startDeadlineChecker = () => {
     }, 10000); // checking every 10s for demo purposes
 };
 
-/* --- HIGH-FIDELITY CUSTOM CURSOR --- */
+/* --- HIGH-FIDELITY LIQUID MERCURY CURSOR --- */
 const cursorDot = document.getElementById("cursor-dot");
 const cursorRing = document.getElementById("cursor-ring");
 
 let mouseX = window.innerWidth / 2;
 let mouseY = window.innerHeight / 2;
-let lastMouseX = mouseX;
-let lastMouseY = mouseY;
-let ringX = mouseX;
-let ringY = mouseY;
+let blobX = mouseX;
+let blobY = mouseY;
+let dotX = mouseX;
+let dotY = mouseY;
 let dotScaleX = 1;
 let dotScaleY = 1;
 let dotRotation = 0;
@@ -1205,57 +1216,37 @@ let dotRotation = 0;
 document.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-    
-    // Create Particles
-    if (Math.random() > 0.7) {
-        createCursorParticle(mouseX, mouseY);
-    }
-    
-    // Velocity & Chromatic Aberration
-    const vx = mouseX - lastMouseX;
-    const vy = mouseY - lastMouseY;
-    const speed = Math.sqrt(vx*vx + vy*vy);
-    
-    // Velocity Stretch
-    if (speed > 1) {
-        dotScaleX = 1 + Math.min(speed / 50, 0.8);
-        dotScaleY = 1 - Math.min(speed / 100, 0.4);
-        dotRotation = Math.atan2(vy, vx) * (180 / Math.PI);
-    }
-
-    if (cursorDot) {
-        cursorDot.style.left = mouseX + "px";
-        cursorDot.style.top = mouseY + "px";
-        cursorDot.style.transform = `translate(-50%, -50%) rotate(${dotRotation}deg) scale(${dotScaleX}, ${dotScaleY})`;
-        
-        // Chromatic Aberration during fast movement
-        if (speed > 20) {
-            cursorDot.style.filter = `drop-shadow(${vx/5}px 0px 0px rgba(255,0,0,0.5)) drop-shadow(${-vx/5}px 0px 0px rgba(0,255,255,0.5))`;
-        } else {
-            cursorDot.style.filter = '';
-        }
-    }
-    
-    lastMouseX = mouseX;
-    lastMouseY = mouseY;
-
-    // Heart Trail Sync Logic (Modified to be more subtle)
-    if (window.isFullySynchronized && Math.random() > 0.9) {
-        createFloatingSymbol('❤', mouseX, mouseY);
-    }
 });
 
-const createCursorParticle = (x, y) => {
-    const p = document.createElement('div');
-    p.className = 'cursor-particle';
-    const size = Math.random() * 4 + 2;
-    p.style.width = size + 'px';
-    p.style.height = size + 'px';
-    p.style.left = x + 'px';
-    p.style.top = y + 'px';
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), 600);
+const renderCursor = () => {
+    // Advanced Physics (High inertia for blob, low for dot)
+    blobX += (mouseX - blobX) * 0.12;
+    blobY += (mouseY - blobY) * 0.12;
+    dotX += (mouseX - dotX) * 0.35;
+    dotY += (mouseY - dotY) * 0.35;
+    
+    const dx = mouseX - blobX;
+    const dy = mouseY - blobY;
+    const speed = Math.sqrt(dx*dx + dy*dy);
+    
+    // Liquid Stretch
+    const stretch = 1 + Math.min(speed / 100, 1.2);
+    const rotation = Math.atan2(dy, dx) * (180 / Math.PI);
+
+    if (cursorRing) {
+        cursorRing.style.left = blobX + "px";
+        cursorRing.style.top = blobY + "px";
+        cursorRing.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) scale(${stretch}, ${1 / stretch})`;
+    }
+    
+    if (cursorDot) {
+        cursorDot.style.left = dotX + "px";
+        cursorDot.style.top = dotY + "px";
+    }
+    
+    requestAnimationFrame(renderCursor);
 };
+requestAnimationFrame(renderCursor);
 
 const createFloatingSymbol = (char, x, y) => {
     const s = document.createElement('div');
@@ -1267,20 +1258,6 @@ const createFloatingSymbol = (char, x, y) => {
     document.body.appendChild(s);
     setTimeout(() => s.remove(), 3000);
 };
-
-const renderCursor = () => {
-    // Lerp Aura
-    ringX += (mouseX - ringX) * 0.15;
-    ringY += (mouseY - ringY) * 0.15;
-    
-    if (cursorRing) {
-        cursorRing.style.left = ringX + "px";
-        cursorRing.style.top = ringY + "px";
-    }
-    
-    requestAnimationFrame(renderCursor);
-};
-requestAnimationFrame(renderCursor);
 
 // Hover magnetics
 document.addEventListener("mouseover", (e) => {
@@ -1312,9 +1289,17 @@ document.addEventListener("mouseup", () => {
 
 /* --- ULTIMATE CELEBRATION LOGIC --- */
 const setupCelebrationHooks = () => {
-    window.addEventListener('load', () => { setTimeout(triggerUltimateCelebration, 1500); });
+    window.addEventListener('load', () => { 
+        setTimeout(triggerUltimateCelebration, 1500); 
+        fetchDailyImage(); // Initial fetch
+    });
     document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible") triggerUltimateCelebration();
+        if (document.visibilityState === "visible") {
+            if (!document.body.classList.contains('active-celebration')) {
+                triggerUltimateCelebration();
+            }
+            fetchDailyImage(); // Refresh photos when coming back
+        }
     });
 };
 
@@ -1340,8 +1325,72 @@ const triggerUltimateCelebration = () => {
         }, i * 150);
     }
     
-    // Reset after some time if needed, or keep it active while synced
-    // For now, let's keep it active as requested "whenever synchronization is full"
+    // 4. Emoji Flight & Orbit
+    triggerEmojiFlight();
+};
+
+const triggerEmojiFlight = () => {
+    // Prevent duplicated phantoms
+    if (document.querySelector('.phantom-emoji')) return;
+
+    const quill = document.getElementById('quill-emoji');
+    const camera = document.getElementById('camera-emoji');
+    const container = document.getElementById('sync-container');
+    
+    if (!quill || !camera || !container) return;
+    
+    const flyEmoji = (el, delay) => {
+        const phantom = el.cloneNode(true);
+        phantom.id = '';
+        phantom.classList.add('phantom-emoji');
+        
+        const startRect = el.getBoundingClientRect();
+        phantom.style.left = startRect.left + 'px';
+        phantom.style.top = startRect.top + 'px';
+        
+        document.body.appendChild(phantom);
+        
+        setTimeout(() => {
+            const destRect = container.getBoundingClientRect();
+            phantom.style.left = (destRect.left + destRect.width/2) + 'px';
+            phantom.style.top = (destRect.top + destRect.height/2) + 'px';
+            phantom.style.transform = 'scale(2)';
+            
+            setTimeout(() => {
+                phantom.style.transition = 'none';
+                container.appendChild(phantom);
+                phantom.style.left = '50%';
+                phantom.style.top = '50%';
+                phantom.classList.add('orbiting');
+                startFairyDust(phantom);
+            }, 800);
+        }, delay);
+    };
+    
+    flyEmoji(quill, 100);
+    flyEmoji(camera, 400);
+};
+
+const startFairyDust = (target) => {
+    if (window.fairyDustInterval) return;
+    
+    window.fairyDustInterval = setInterval(() => {
+        if (!window.isFullySynchronized) return;
+        const rect = target.getBoundingClientRect();
+        createFairyDust(rect.left + rect.width/2, rect.top + rect.height/2);
+    }, 100);
+};
+
+const createFairyDust = (x, y) => {
+    const d = document.createElement('div');
+    d.className = 'fairy-dust';
+    const size = Math.random() * 6 + 2;
+    d.style.width = size + 'px';
+    d.style.height = size + 'px';
+    d.style.left = (x + (Math.random() - 0.5) * 30) + 'px';
+    d.style.top = (y + (Math.random() - 0.5) * 30) + 'px';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 800);
 };
 
 // --- NEW FEATURES LISTENERS ---
@@ -1377,29 +1426,43 @@ const fetchDailyImage = async () => {
                 pImg.style.display = 'block';
                 if (data.is_unlocked) {
                     pImg.style.filter = 'none';
-                    document.getElementById('partner-mystery-lock').style.display = 'none';
                 } else {
                     pImg.style.filter = 'blur(25px)';
-                    document.getElementById('partner-mystery-lock').style.display = 'flex';
                     pImg.dataset.id = data.id;
                 }
             }
+            const lock = document.getElementById('partner-mystery-lock');
+            if (lock) lock.style.display = (data.is_unlocked ? 'none' : 'flex');
+        } else {
+            // No image today, hide it
+            const pImg = document.getElementById('partner-mystery-img');
+            if (pImg) pImg.style.display = 'none';
+            const lock = document.getElementById('partner-mystery-lock');
+            if (lock) lock.style.display = 'none';
         }
-    } catch (e) { console.log("No daily image for me"); }
+    } catch (e) { 
+        console.log("No daily image for me today");
+    }
 
     // 2. Fetch image uploaded BY ME (for partner)
     try {
         const res = await fetch(`${API_BASE}/daily_image/uploader/${state.currentUser.id}`);
+        const myPreview = document.getElementById('my-mystery-preview');
+        const myImg = document.getElementById('my-uploaded-img');
+        
         if(res.ok) {
             const data = await res.json();
-            const myPreview = document.getElementById('my-mystery-preview');
-            const myImg = document.getElementById('my-uploaded-img');
             if (myPreview && myImg) {
                 myImg.src = data.image_data;
                 myPreview.classList.remove('display-none');
             }
+        } else {
+            // No image today, hide preview
+            if (myPreview) myPreview.classList.add('display-none');
         }
-    } catch (e) { console.log("No daily image uploaded by me"); }
+    } catch (e) { 
+        console.log("No daily image uploaded by me today"); 
+    }
 };
 
 const btnUploadMystery = document.getElementById('btn-upload-mystery');

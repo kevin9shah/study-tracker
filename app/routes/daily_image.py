@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from app.db.databases import get_db
 from app.models.daily_image import DailyImage
 from app.schemas.daily_image import DailyImageCreate, DailyImageUpdate
-from sqlalchemy import desc
+from sqlalchemy import desc, func
+from datetime import datetime, date
 
 router = APIRouter(prefix="/daily_image", tags=["DailyImage"])
 
@@ -17,16 +18,27 @@ def upload_daily_image(image_in: DailyImageCreate, db: Session = Depends(get_db)
 
 @router.get("/{receiver_id}")
 def get_daily_image(receiver_id: int, db: Session = Depends(get_db)):
-    image = db.query(DailyImage).filter(DailyImage.receiver_id == receiver_id).order_by(desc(DailyImage.created_at)).first()
+    # Only get images from TODAY
+    today = date.today()
+    image = db.query(DailyImage).filter(
+        DailyImage.receiver_id == receiver_id,
+        func.date(DailyImage.created_at) == today
+    ).order_by(desc(DailyImage.created_at)).first()
+    
     if not image:
-        raise HTTPException(status_code=404, detail="No image found")
+        raise HTTPException(status_code=404, detail="No image found for today")
     return image
 
 @router.get("/uploader/{uploader_id}")
 def get_uploaded_image(uploader_id: int, db: Session = Depends(get_db)):
-    image = db.query(DailyImage).filter(DailyImage.uploader_id == uploader_id).order_by(desc(DailyImage.created_at)).first()
+    today = date.today()
+    image = db.query(DailyImage).filter(
+        DailyImage.uploader_id == uploader_id,
+        func.date(DailyImage.created_at) == today
+    ).order_by(desc(DailyImage.created_at)).first()
+    
     if not image:
-        raise HTTPException(status_code=404, detail="No image found")
+        raise HTTPException(status_code=404, detail="No image found for today")
     return image
 
 @router.patch("/unlock")
