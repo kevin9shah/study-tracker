@@ -254,6 +254,9 @@ const fetchActivity = async () => {
             document.getElementById('my-status-indicator').className = "status-dot offline";
         }
         
+        let syncLevel = 0;
+        if (myActivity.is_active) syncLevel += 50;
+
         // Update partner UI
         if (state.partnerId && results[1]) {
             const partnerActivity = results[1];
@@ -263,10 +266,30 @@ const fetchActivity = async () => {
                 document.getElementById('partner-status-text').innerText = "Currently Studying";
                 document.getElementById('partner-status-indicator').className = "status-dot active";
                 document.getElementById('partner-status-dot').classList.remove('display-none');
+                syncLevel += 50;
             } else {
                 document.getElementById('partner-status-text').innerText = "Offline";
                 document.getElementById('partner-status-indicator').className = "status-dot offline";
                 document.getElementById('partner-status-dot').classList.add('display-none');
+            }
+        }
+
+        let syncText = "Desynchronized";
+        if (syncLevel === 100) syncText = "Synchronized";
+        else if (syncLevel === 50) syncText = "Partial Sync";
+
+        const syncLabel = document.getElementById('sync-status-label');
+        const syncFill = document.getElementById('sync-progress-fill');
+        const syncPill = document.querySelector('.couple-stat-pill');
+        if (syncLabel && syncFill && syncPill) {
+            syncLabel.innerText = syncText;
+            syncFill.style.width = `${syncLevel}%`;
+            if (syncLevel === 100) {
+                syncPill.classList.add('sync-glow');
+                window.isFullySynchronized = true;
+            } else {
+                syncPill.classList.remove('sync-glow');
+                window.isFullySynchronized = false;
             }
         }
     } catch (err) {
@@ -961,6 +984,20 @@ document.addEventListener("mousemove", (e) => {
         cursorDot.style.left = mouseX + "px";
         cursorDot.style.top = mouseY + "px";
     }
+    
+    // Heart Trail Logic
+    if (window.isFullySynchronized && Math.random() > 0.6) {
+        const heart = document.createElement("div");
+        heart.className = "heart-trail";
+        heart.innerText = "❤";
+        heart.style.left = (mouseX - 10 + Math.random() * 20) + "px";
+        heart.style.top = (mouseY - 10 + Math.random() * 20) + "px";
+        document.body.appendChild(heart);
+        
+        setTimeout(() => {
+            heart.remove();
+        }, 1000);
+    }
 });
 
 const renderCursor = () => {
@@ -985,13 +1022,11 @@ document.addEventListener("mouseover", (e) => {
         cursorRing.style.width = '55px';
         cursorRing.style.height = '55px';
         cursorRing.style.backgroundColor = 'rgba(124, 58, 237, 0.15)';
-        cursorRing.style.borderColor = 'var(--primary-light)';
         cursorDot.style.transform = 'translate(-50%, -50%) scale(1.5)';
     } else if (cursorRing && cursorDot) {
-        cursorRing.style.width = '32px';
-        cursorRing.style.height = '32px';
+        cursorRing.style.width = '36px';
+        cursorRing.style.height = '36px';
         cursorRing.style.backgroundColor = 'transparent';
-        cursorRing.style.borderColor = 'rgba(124, 58, 237, 0.4)';
         cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
     }
 });
