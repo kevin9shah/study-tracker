@@ -162,6 +162,9 @@
                                 <input type="file" id="mystery-file" accept="image/*" style="font-size: 0.8rem; color: #aaa;">
                                 <button id="btn-upload-mystery" class="hud-secondary-btn" style="padding: 5px 15px; width: auto;">Upload for Partner</button>
                             </div>
+                            <div id="my-mystery-preview" class="display-none" style="margin-top:15px; width: 100%; height: 120px; border-radius: 8px; overflow: hidden; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05);">
+                                <img id="my-uploaded-img" src="" style="width: 100%; height: 100%; object-fit: cover;" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -320,9 +323,16 @@
         </div>
     </div>
 
+    <!-- CELEBRATION LAYER -->
+    <div id="celebration-overlay" class="celebration-layer"></div>
+
     <!-- PERSONAL BRANDING -->
     <div class="kevin-branding">
-        <span class="kevin-text">DESIGNED BY KEVIN SHAH</span>
+        <span class="kevin-text">
+            <span id="quill-emoji" class="celeb-emoji">🪶</span>
+            <span id="camera-emoji" class="celeb-emoji">📸</span>
+            DESIGNED BY KEVIN SHAH
+        </span>
     </div>
 
     <!-- CUSTOM CURSOR -->

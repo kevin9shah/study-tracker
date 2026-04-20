@@ -22,6 +22,13 @@ def get_daily_image(receiver_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No image found")
     return image
 
+@router.get("/uploader/{uploader_id}")
+def get_uploaded_image(uploader_id: int, db: Session = Depends(get_db)):
+    image = db.query(DailyImage).filter(DailyImage.uploader_id == uploader_id).order_by(desc(DailyImage.created_at)).first()
+    if not image:
+        raise HTTPException(status_code=404, detail="No image found")
+    return image
+
 @router.patch("/unlock")
 def unlock_image(update_data: DailyImageUpdate, db: Session = Depends(get_db)):
     db_image = db.query(DailyImage).filter(DailyImage.id == update_data.id).first()

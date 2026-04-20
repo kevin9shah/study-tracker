@@ -8,12 +8,27 @@ let state = {
     partnerActivity: null,
     tasks: [],
     punishments: [],
-    rewards: []
+    rewards: [],
+    sounds: {
+        reward: new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3'),
+        message: new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_2ea93d6c1f.mp3'),
+        photo: new Audio('https://cdn.pixabay.com/audio/2022/03/10/audio_c8de304250.mp3'),
+        punishment: new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_12b7950bed.mp3'),
+        fanfare: new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3') // Placeholder, using reward sound for now
+    }
+};
+
+const playSound = (type) => {
+    if (state.sounds[type]) {
+        state.sounds[type].currentTime = 0;
+        state.sounds[type].play().catch(e => console.log("Sound play blocked:", e));
+    }
 };
 
 // INITIALIZATION
 window.addEventListener('DOMContentLoaded', () => {
     loadLocalState();
+    setupCelebrationHooks();
 
     if (state.currentUser && state.partnerId) {
         enterDashboard();
@@ -768,6 +783,7 @@ document.getElementById('form-assign-punish').addEventListener('submit', async (
         document.getElementById('modal-punishment').style.display = 'none';
         e.target.reset();
         renderDashboard();
+        playSound('punishment');
 
     } catch (err) {
         alert("Error: " + err.message);
@@ -802,6 +818,7 @@ const assignReward = async (title) => {
         saveRewards();
         renderDashboard();
         fetchActivity(); // Refresh points after spending
+        playSound('reward');
     } catch (err) {
         alert("Error: " + err.message);
     }
@@ -1171,41 +1188,88 @@ const startDeadlineChecker = () => {
     }, 10000); // checking every 10s for demo purposes
 };
 
-/* --- CUSTOM CURSOR LOGIC --- */
+/* --- HIGH-FIDELITY CUSTOM CURSOR --- */
 const cursorDot = document.getElementById("cursor-dot");
 const cursorRing = document.getElementById("cursor-ring");
 
 let mouseX = window.innerWidth / 2;
 let mouseY = window.innerHeight / 2;
+let lastMouseX = mouseX;
+let lastMouseY = mouseY;
 let ringX = mouseX;
 let ringY = mouseY;
+let dotScaleX = 1;
+let dotScaleY = 1;
+let dotRotation = 0;
 
 document.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
     
+    // Create Particles
+    if (Math.random() > 0.7) {
+        createCursorParticle(mouseX, mouseY);
+    }
+    
+    // Velocity & Chromatic Aberration
+    const vx = mouseX - lastMouseX;
+    const vy = mouseY - lastMouseY;
+    const speed = Math.sqrt(vx*vx + vy*vy);
+    
+    // Velocity Stretch
+    if (speed > 1) {
+        dotScaleX = 1 + Math.min(speed / 50, 0.8);
+        dotScaleY = 1 - Math.min(speed / 100, 0.4);
+        dotRotation = Math.atan2(vy, vx) * (180 / Math.PI);
+    }
+
     if (cursorDot) {
         cursorDot.style.left = mouseX + "px";
         cursorDot.style.top = mouseY + "px";
+        cursorDot.style.transform = `translate(-50%, -50%) rotate(${dotRotation}deg) scale(${dotScaleX}, ${dotScaleY})`;
+        
+        // Chromatic Aberration during fast movement
+        if (speed > 20) {
+            cursorDot.style.filter = `drop-shadow(${vx/5}px 0px 0px rgba(255,0,0,0.5)) drop-shadow(${-vx/5}px 0px 0px rgba(0,255,255,0.5))`;
+        } else {
+            cursorDot.style.filter = '';
+        }
     }
     
-    // Heart Trail Logic
-    if (window.isFullySynchronized && Math.random() > 0.6) {
-        const heart = document.createElement("div");
-        heart.className = "heart-trail";
-        heart.innerText = "❤";
-        heart.style.left = (mouseX - 10 + Math.random() * 20) + "px";
-        heart.style.top = (mouseY - 10 + Math.random() * 20) + "px";
-        document.body.appendChild(heart);
-        
-        setTimeout(() => {
-            heart.remove();
-        }, 1000);
+    lastMouseX = mouseX;
+    lastMouseY = mouseY;
+
+    // Heart Trail Sync Logic (Modified to be more subtle)
+    if (window.isFullySynchronized && Math.random() > 0.9) {
+        createFloatingSymbol('❤', mouseX, mouseY);
     }
 });
 
+const createCursorParticle = (x, y) => {
+    const p = document.createElement('div');
+    p.className = 'cursor-particle';
+    const size = Math.random() * 4 + 2;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 600);
+};
+
+const createFloatingSymbol = (char, x, y) => {
+    const s = document.createElement('div');
+    s.className = 'floating-symbol';
+    s.innerText = char;
+    s.style.left = (x || Math.random() * window.innerWidth) + 'px';
+    s.style.top = (y || window.innerHeight) + 'px';
+    s.style.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 3000);
+};
+
 const renderCursor = () => {
-    // Lerp for smooth magnetic trailing effect
+    // Lerp Aura
     ringX += (mouseX - ringX) * 0.15;
     ringY += (mouseY - ringY) * 0.15;
     
@@ -1218,22 +1282,67 @@ const renderCursor = () => {
 };
 requestAnimationFrame(renderCursor);
 
-// Hover magnetics & morphing
+// Hover magnetics
 document.addEventListener("mouseover", (e) => {
     const isInteractive = e.target.closest('button, a, input, .hud-tab, .task-checkbox, .player-icon, .hud-ctrl-btn, .hud-text-btn, .danger-btn');
     
-    if (isInteractive && cursorRing && cursorDot) {
-        cursorRing.style.width = '55px';
-        cursorRing.style.height = '55px';
-        cursorRing.style.backgroundColor = 'rgba(124, 58, 237, 0.15)';
-        cursorDot.style.transform = 'translate(-50%, -50%) scale(1.5)';
-    } else if (cursorRing && cursorDot) {
+    if (isInteractive && cursorRing) {
+        cursorRing.style.width = '60px';
+        cursorRing.style.height = '60px';
+        cursorRing.style.backgroundColor = 'rgba(124, 58, 237, 0.2)';
+        cursorRing.style.border = '2px solid rgba(124, 58, 237, 0.4)';
+    } else if (cursorRing) {
         cursorRing.style.width = '36px';
         cursorRing.style.height = '36px';
-        cursorRing.style.backgroundColor = 'transparent';
-        cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
+        cursorRing.style.backgroundColor = 'rgba(124, 58, 237, 0.05)';
+        cursorRing.style.border = '1px solid rgba(255, 255, 255, 0.1)';
     }
 });
+
+document.addEventListener("mousedown", () => {
+    if (cursorRing) {
+        cursorRing.style.transform = 'translate(-50%, -50%) scale(0.8)';
+    }
+});
+document.addEventListener("mouseup", () => {
+    if (cursorRing) {
+        cursorRing.style.transform = 'translate(-50%, -50%) scale(1)';
+    }
+});
+
+/* --- ULTIMATE CELEBRATION LOGIC --- */
+const setupCelebrationHooks = () => {
+    window.addEventListener('load', () => { setTimeout(triggerUltimateCelebration, 1500); });
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") triggerUltimateCelebration();
+    });
+};
+
+const triggerUltimateCelebration = () => {
+    if (!window.isFullySynchronized) return;
+
+    console.log("TRIGGERING ULTIMATE CELEBRATION!");
+    document.body.classList.add('active-celebration');
+    
+    // 1. Flash
+    const flash = document.createElement('div');
+    flash.className = 'flash-overlay flash-active';
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 600);
+    
+    // 2. Fanfare
+    playSound('fanfare');
+    
+    // 3. Floating Symbols Grid
+    for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+            createFloatingSymbol(Math.random() > 0.5 ? '❤' : '✨');
+        }, i * 150);
+    }
+    
+    // Reset after some time if needed, or keep it active while synced
+    // For now, let's keep it active as requested "whenever synchronization is full"
+};
 
 // --- NEW FEATURES LISTENERS ---
 const btnAddReward = document.getElementById('btn-add-reward');
@@ -1256,6 +1365,8 @@ if (formReward) {
 
 const fetchDailyImage = async () => {
     if (!state.currentUser) return;
+    
+    // 1. Fetch image meant for ME (from partner)
     try {
         const res = await fetch(`${API_BASE}/daily_image/${state.currentUser.id}`);
         if(res.ok) {
@@ -1274,7 +1385,21 @@ const fetchDailyImage = async () => {
                 }
             }
         }
-    } catch (e) { console.log("No daily image"); }
+    } catch (e) { console.log("No daily image for me"); }
+
+    // 2. Fetch image uploaded BY ME (for partner)
+    try {
+        const res = await fetch(`${API_BASE}/daily_image/uploader/${state.currentUser.id}`);
+        if(res.ok) {
+            const data = await res.json();
+            const myPreview = document.getElementById('my-mystery-preview');
+            const myImg = document.getElementById('my-uploaded-img');
+            if (myPreview && myImg) {
+                myImg.src = data.image_data;
+                myPreview.classList.remove('display-none');
+            }
+        }
+    } catch (e) { console.log("No daily image uploaded by me"); }
 };
 
 const btnUploadMystery = document.getElementById('btn-upload-mystery');
@@ -1298,6 +1423,8 @@ if (btnUploadMystery) {
                 });
                 if(!res.ok) throw new Error("Upload failed.");
                 alert("Image uploaded for partner!");
+                playSound('photo');
+                fetchDailyImage(); // Refresh my preview
             } catch(err) {
                 alert("Upload failed.");
             }
@@ -1338,6 +1465,7 @@ if (formNote) {
             document.getElementById('modal-note').style.display = 'none';
             e.target.reset();
             renderDashboard();
+            playSound('message');
             alert("Note saved for partner!");
 
         } catch (err) {
