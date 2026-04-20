@@ -579,7 +579,6 @@ document.getElementById('form-task').addEventListener('submit', async (e) => {
     const tChapNum = parseInt(document.getElementById('t-chap-num').value);
     const tChapName = document.getElementById('t-chap-name').value;
     const tDeadline = new Date(document.getElementById('t-deadline').value);
-    const tSecret = document.getElementById('t-secret') ? document.getElementById('t-secret').value : null;
 
     // Call Backend (we fire and forget to satisfy backend tracking)
     try {
@@ -610,7 +609,6 @@ document.getElementById('form-task').addEventListener('submit', async (e) => {
         // 3. Deadline
         const localDeadline = document.getElementById('t-deadline').value; // Keep local string to avoid UTC shifts
         let deadlinePayload = { user_id: state.currentUser.id, chapter_id: chapId, deadline_time: localDeadline, status: 'pending' };
-        if (tSecret) deadlinePayload.secret_message = tSecret;
 
         let resDeadline = await fetch(`${API_BASE}/deadline/`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -632,8 +630,7 @@ document.getElementById('form-task').addEventListener('submit', async (e) => {
             chapNum: tChapNum,
             chapName: tChapName,
             deadline: localDeadline,
-            status: 'pending',
-            secretMessage: tSecret
+            status: 'pending'
         };
         state.tasks.push(task);
         saveTasks();
@@ -963,10 +960,10 @@ const renderDashboard = () => {
     // Sort tasks
     state.tasks.forEach(t => {
         const dStr = new Date(t.deadline).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const isMe = String(t.userId) === String(state.currentUser.id);
 
         if (t.status === 'pending' || t.status === 'completed' || t.status === 'active') {
             const tr = document.createElement('tr');
-            const isMe = String(t.userId) === String(state.currentUser.id);
             
             if (t.status === 'completed') {
                 tr.className = 'completed-row';
@@ -975,17 +972,33 @@ const renderDashboard = () => {
             }
 
             const ck = isMe ? `<input type="checkbox" class="task-checkbox" ${t.status === 'completed' ? 'checked' : ''} onchange="toggleTaskStatus('${t.id}', this.checked)">` : (t.status === 'completed' ? 'Done' : 'Pending');
-            
             const deleteBtn = isMe ? `<button class="danger-btn" style="padding:0.4rem 0.6rem; font-size:0.8rem;" onclick="deleteTask(${t.id})">Delete</button>` : '';
             
-            const secretHtml = (t.status === 'completed' && t.secretMessage) ? `<div style="font-size:0.75rem; color:#ec4899; margin-top:4px;">💌 ${t.secretMessage}</div>` : (t.status === 'pending' && t.secretMessage) ? `<div style="font-size:0.75rem; color:#888; margin-top:4px;"> Secret Note Hidden</div>` : '';
+            // Note logic
+            let noteBtn = "";
+            let secretHtml = "";
+            
+            if (isMe) {
+                // For me, hide secret message until completion
+                if (t.status === 'completed' && t.secretMessage) {
+                    secretHtml = `<div style="font-size:0.75rem; color:#ec4899; margin-top:4px;">💌 Partner says: ${t.secretMessage}</div>`;
+                } else if (t.secretMessage) {
+                    secretHtml = `<div style="font-size:0.75rem; color:#888; margin-top:4px;">🔒 Secret message hidden</div>`;
+                }
+            } else {
+                // For partner tasks, show "Give Note" button and show them the note they wrote
+                noteBtn = `<button class="hud-success-btn" style="padding:0.4rem 0.6rem; font-size:0.8rem; background: #10b981; margin-left: 5px;" onclick="openNoteModal('${t.id}', '${t.subject} Ch.${t.chapNum}')">${t.secretMessage ? 'Edit Note' : 'Give Note'}</button>`;
+                if (t.secretMessage) {
+                    secretHtml = `<div style="font-size:0.75rem; color:#10b981; margin-top:4px;">📝 Your note: ${t.secretMessage}</div>`;
+                }
+            }
 
             tr.innerHTML = `
                 <td>${ck}</td>
                 <td>${t.subject}</td>
                 <td>Ch.${t.chapNum}: ${t.chapName} ${secretHtml}</td>
                 <td>${dStr}</td>
-                <td>${deleteBtn}</td>
+                <td><div style="display:flex; gap:5px;">${deleteBtn} ${noteBtn}</div></td>
             `;
 
             if (isMe) {
@@ -1000,32 +1013,52 @@ const renderDashboard = () => {
             div.className = 'list-item';
             if (t.status === 'missed-done') div.style.opacity = '0.7';
 
-            const isMe = String(t.userId) === String(state.currentUser.id);
-
             if (isMe) {
                 const isDone = t.status === 'missed-done';
+                let secretHtml = "";
+                if (isDone && t.secretMessage) {
+                    secretHtml = `<div style="font-size:0.75rem; color:#ec4899; margin-top:4px;">💌 Partner says: ${t.secretMessage}</div>`;
+                } else if (t.secretMessage) {
+                    secretHtml = `<div style="font-size:0.75rem; color:#888; margin-top:4px;">🔒 Secret message hidden</div>`;
+                }
+
                 div.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <input type="checkbox" class="task-checkbox" ${isDone ? 'checked' : ''} onchange="toggleTaskStatus('${t.id}', this.checked)">
-                        <span style="${isDone ? 'text-decoration:line-through;' : ''}"><strong class="hud-alert-text">Missed:</strong> ${t.subject} (Ch.${t.chapNum})</span>
+                    <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <input type="checkbox" class="task-checkbox" ${isDone ? 'checked' : ''} onchange="toggleTaskStatus('${t.id}', this.checked)">
+                            <span style="${isDone ? 'text-decoration:line-through;' : ''}"><strong class="hud-alert-text">Missed:</strong> ${t.subject} (Ch.${t.chapNum})</span>
+                        </div>
+                        <span style="font-size:0.8rem; color:#555">Due: ${dStr}</span>
+                        ${secretHtml}
                     </div>
-                    <span style="font-size:0.8rem; color:#555">Due: ${dStr}</span>
                 `;
                 myMissedBody.appendChild(div);
             } else {
                 const isPartnerDone = t.status === 'missed-done';
-                // Check if punishment already assigned
                 const pAssigned = state.punishments.some(p => String(p.taskId) === String(t.id));
-                const btnHtml = pAssigned
+                const punishBtnHtml = pAssigned
                     ? `<span style="color:var(--success)">Punished</span>`
                     : `<button class="danger-btn" style="padding:0.4em 0.8em;" onclick="assignPunishment('${t.id}', '${t.subject} - Ch.${t.chapNum}')">Assign Punishment</button>`;
 
+                const noteBtnHtml = `<button class="hud-success-btn" style="padding:0.4rem 0.6rem; font-size:0.7rem; background: #10b981; width:auto;" onclick="openNoteModal('${t.id}', '${t.subject} Ch.${t.chapNum}')">${t.secretMessage ? 'Edit Note' : 'Give Note'}</button>`;
+                
+                let secretHtml = "";
+                if (t.secretMessage) {
+                    secretHtml = `<div style="font-size:0.75rem; color:#10b981; margin-top:4px;">📝 Your note: ${t.secretMessage}</div>`;
+                }
+
                 div.innerHTML = `
-                    <div style="display:flex; flex-direction:column; gap:2px;">
-                        <span style="${isPartnerDone ? 'text-decoration:line-through; opacity:0.6;' : ''}"><strong class="hud-alert-text">Missed:</strong> ${t.subject} (Ch.${t.chapNum})</span>
-                        ${isPartnerDone ? '<span style="font-size:0.7rem; color:var(--hud-green)">Finished late</span>' : ''}
+                    <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                        <div style="display:flex; flex-direction:column; gap:2px;">
+                            <span style="${isPartnerDone ? 'text-decoration:line-through; opacity:0.6;' : ''}"><strong class="hud-alert-text">Missed:</strong> ${t.subject} (Ch.${t.chapNum})</span>
+                            ${isPartnerDone ? '<span style="font-size:0.7rem; color:var(--hud-green)">Finished late</span>' : ''}
+                        </div>
+                        ${secretHtml}
+                        <div style="display:flex; gap:8px; margin-top:4px;">
+                            ${punishBtnHtml}
+                            ${noteBtnHtml}
+                        </div>
                     </div>
-                    ${btnHtml}
                 `;
                 partnerMissedBody.appendChild(div);
             }
@@ -1270,6 +1303,46 @@ if (btnUploadMystery) {
             }
         };
         reader.readAsDataURL(file);
+    });
+}
+
+// --- NOTE LOGIC ---
+const openNoteModal = (taskId, taskName) => {
+    document.getElementById('n-task-id').value = taskId;
+    document.getElementById('n-task-name').innerText = taskName;
+    document.getElementById('modal-note').style.display = 'flex';
+};
+
+const formNote = document.getElementById('form-note');
+if (formNote) {
+    formNote.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const taskId = document.getElementById('n-task-id').value;
+        const message = document.getElementById('n-message').value;
+
+        try {
+            const res = await fetch(`${API_BASE}/deadline/${taskId}/note`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ secret_message: message })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || "Error saving note");
+
+            // Update local state
+            const task = state.tasks.find(t => String(t.id) === String(taskId));
+            if (task) task.secretMessage = message;
+            saveTasks();
+
+            document.getElementById('modal-note').style.display = 'none';
+            e.target.reset();
+            renderDashboard();
+            alert("Note saved for partner!");
+
+        } catch (err) {
+            alert("Error: " + err.message);
+        }
     });
 }
 

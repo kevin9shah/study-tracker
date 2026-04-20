@@ -9,7 +9,7 @@ from app.models.subject import Subject
 from sqlalchemy.orm import Session
 from app.db.databases import get_db
 
-from app.schemas.deadline import DeadlineCreate
+from app.schemas.deadline import DeadlineCreate, DeadlineNoteUpdate
 
 
 router = APIRouter(prefix="/deadline", tags=["Deadline"])
@@ -28,7 +28,7 @@ def create_deadline(deadline : DeadlineCreate, db : Session = Depends(get_db)):
         chapter_id = deadline.chapter_id,
         deadline_time = deadline.deadline_time,
         status = deadline.status,
-      
+        secret_message = deadline.secret_message
     )
     
     db.add(new_deadline)
@@ -55,7 +55,8 @@ def get_user_deadlines(user_id: int, db: Session = Depends(get_db)):
             "chapter_number": chapter.chapter_number if chapter else 0,
             "chapter_name": chapter.name if (chapter and chapter.name) else (f"Chapter {chapter.chapter_number}" if chapter else "Unknown Chapter"),
             "deadline_time": deadline.deadline_time,
-            "status": deadline.status
+            "status": deadline.status,
+            "secret_message": deadline.secret_message
         })
     return tasks
 
@@ -78,3 +79,13 @@ def delete_deadline(deadline_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
         
     return {"message": "Deadline deleted successfully"}
+@router.patch("/{deadline_id}/note")
+def update_deadline_note(deadline_id: int, note_data: DeadlineNoteUpdate, db: Session = Depends(get_db)):
+    deadline = db.query(Deadline).filter(Deadline.id == deadline_id).first()
+    if not deadline:
+        raise HTTPException(status_code=404, detail="Deadline not found")
+    
+    deadline.secret_message = note_data.secret_message
+    db.commit()
+    db.refresh(deadline)
+    return deadline

@@ -7,3 +7,6 @@ class DeadlineCreate(BaseModel):
     deadline_time : datetime
     status : str
     secret_message: str | None = None
+
+class DeadlineNoteUpdate(BaseModel):
+    secret_message: str

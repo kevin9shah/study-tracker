@@ -247,10 +247,6 @@
                     <label>Deadline</label>
                     <input type="datetime-local" id="t-deadline" required>
                 </div>
-                <div class="hud-input-group">
-                    <label>Secret Love Note </label>
-                    <input type="text" id="t-secret" placeholder="Unlocked on completion (optional)">
-                </div>
                 <div class="modal-btns">
                     <button type="button" class="hud-text-btn" onclick="document.getElementById('modal-task').style.display='none'">Cancel</button>
                     <button type="submit" class="hud-primary-btn" style="width:auto; padding: 10px 20px;">Save Task</button>
@@ -300,6 +296,25 @@
                 <div class="modal-btns">
                     <button type="button" class="hud-text-btn" onclick="document.getElementById('modal-reward').style.display='none'">Cancel</button>
                     <button type="submit" class="hud-primary-btn" style="width:auto; padding: 10px 20px; background: #ec4899; border: none; box-shadow: 0 0 10px #ec4899;">Send Reward</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: NOTE -->
+    <div id="modal-note" class="hud-modal">
+        <div class="modal-card hud-card" style="border: 1px solid #10b981; box-shadow: 0 0 20px rgba(16,185,129,0.2);">
+            <h2 style="color: #10b981;">Give Love Note</h2>
+            <p style="margin-bottom: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">Adding note to: <br><strong id="n-task-name" style="color:var(--text-main); font-size:1.1rem; display:block; margin-top:5px;"></strong></p>
+            <form id="form-note">
+                <input type="hidden" id="n-task-id">
+                <div class="hud-input-group">
+                    <label>Your Secret Message</label>
+                    <input type="text" id="n-message" placeholder="e.g. You're doing great!" required>
+                </div>
+                <div class="modal-btns">
+                    <button type="button" class="hud-text-btn" onclick="document.getElementById('modal-note').style.display='none'">Cancel</button>
+                    <button type="submit" class="hud-success-btn" style="width:auto; padding: 10px 20px; background: #10b981; border: none; box-shadow: 0 0 10px #10b981;">Save Note</button>
                 </div>
             </form>
         </div>
