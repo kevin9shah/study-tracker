@@ -1205,13 +1205,8 @@ const cursorRing = document.getElementById("cursor-ring");
 
 let mouseX = window.innerWidth / 2;
 let mouseY = window.innerHeight / 2;
-let blobX = mouseX;
-let blobY = mouseY;
-let dotX = mouseX;
-let dotY = mouseY;
-let dotScaleX = 1;
-let dotScaleY = 1;
-let dotRotation = 0;
+let ringX = mouseX;
+let ringY = mouseY;
 
 document.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
@@ -1219,29 +1214,18 @@ document.addEventListener("mousemove", (e) => {
 });
 
 const renderCursor = () => {
-    // Advanced Physics (High inertia for blob, low for dot)
-    blobX += (mouseX - blobX) * 0.12;
-    blobY += (mouseY - blobY) * 0.12;
-    dotX += (mouseX - dotX) * 0.35;
-    dotY += (mouseY - dotY) * 0.35;
+    // Smooth Lerp for ring, instant for dot
+    ringX += (mouseX - ringX) * 0.15;
+    ringY += (mouseY - ringY) * 0.15;
     
-    const dx = mouseX - blobX;
-    const dy = mouseY - blobY;
-    const speed = Math.sqrt(dx*dx + dy*dy);
-    
-    // Liquid Stretch
-    const stretch = 1 + Math.min(speed / 100, 1.2);
-    const rotation = Math.atan2(dy, dx) * (180 / Math.PI);
-
     if (cursorRing) {
-        cursorRing.style.left = blobX + "px";
-        cursorRing.style.top = blobY + "px";
-        cursorRing.style.transform = `translate(-50%, -50%) rotate(${rotation}deg) scale(${stretch}, ${1 / stretch})`;
+        cursorRing.style.left = ringX + 'px';
+        cursorRing.style.top = ringY + 'px';
     }
     
     if (cursorDot) {
-        cursorDot.style.left = dotX + "px";
-        cursorDot.style.top = dotY + "px";
+        cursorDot.style.left = mouseX + 'px';
+        cursorDot.style.top = mouseY + 'px';
     }
     
     requestAnimationFrame(renderCursor);
@@ -1262,17 +1246,10 @@ const createFloatingSymbol = (char, x, y) => {
 // Hover magnetics
 document.addEventListener("mouseover", (e) => {
     const isInteractive = e.target.closest('button, a, input, .hud-tab, .task-checkbox, .player-icon, .hud-ctrl-btn, .hud-text-btn, .danger-btn');
-    
     if (isInteractive && cursorRing) {
-        cursorRing.style.width = '60px';
-        cursorRing.style.height = '60px';
-        cursorRing.style.backgroundColor = 'rgba(124, 58, 237, 0.2)';
-        cursorRing.style.border = '2px solid rgba(124, 58, 237, 0.4)';
+        cursorRing.classList.add('cursor-magnetic');
     } else if (cursorRing) {
-        cursorRing.style.width = '36px';
-        cursorRing.style.height = '36px';
-        cursorRing.style.backgroundColor = 'rgba(124, 58, 237, 0.05)';
-        cursorRing.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+        cursorRing.classList.remove('cursor-magnetic');
     }
 });
 
