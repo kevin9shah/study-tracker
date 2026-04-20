@@ -714,6 +714,10 @@ input {
 .celeb-emoji {
     display: inline-block;
     transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: none;
+    -webkit-background-clip: initial;
+    -webkit-text-fill-color: initial;
+    filter: drop-shadow(0 0 10px rgba(255,255,255,0.4));
 }
 
 .active-celebration #quill-emoji {
