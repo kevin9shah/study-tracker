@@ -28,7 +28,8 @@ def create_punishment(punishment : PunishmentCreate, db : Session = Depends(get_
         user_id = punishment.user_id,
         task_id = punishment.task_id,
         title = punishment.title,
-        status = punishment.status
+        status = punishment.status,
+        category = punishment.category
     )
     
     db.add(new_punishment)

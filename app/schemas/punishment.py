@@ -6,6 +6,7 @@ class PunishmentCreate(BaseModel):
     task_id : int | None = None
     title : str
     status : str
+    category: str | None = None
 
 class PunishmentUpdate(BaseModel):
     id : int

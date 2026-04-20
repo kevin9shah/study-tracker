@@ -63,6 +63,53 @@ def login_user(user : UserLogin, db : Session = Depends(get_db)):
             "partner_id": partner_id,
             "partner_name": partner_name
             }
+
+@router.post("/{user_id}/ping")
+def ping_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if user:
+        from datetime import datetime
+        user.last_active = datetime.utcnow()
+        db.commit()
+    return {"status": "ok"}
+
+@router.get("/{user_id}/activity")
+def get_user_activity(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+         raise HTTPException(status_code=404, detail="User not found")
     
+    from app.models.progress import Progress
+    from sqlalchemy import func
+    records = db.query(func.date(Progress.updated_at)).filter(
+        Progress.user_id == user_id, 
+        Progress.status == 'completed'
+    ).distinct().order_by(func.date(Progress.updated_at).desc()).all()
     
+    streak = 0
+    from datetime import datetime, timedelta
+    current_date = datetime.utcnow().date()
     
+    dates = [r[0] for r in records]
+    
+    expected_date = current_date
+    for d in dates:
+        if d == expected_date:
+            streak += 1
+            expected_date -= timedelta(days=1)
+        elif d == current_date - timedelta(days=1) and streak == 0:
+            streak += 1
+            expected_date = current_date - timedelta(days=2)
+        else:
+            break
+            
+    is_active = False
+    if user.last_active:
+        time_diff = datetime.utcnow() - user.last_active
+        is_active = time_diff.total_seconds() <= 300 # 5 minutes
+        
+    return {
+        "last_active": user.last_active,
+        "is_active": is_active,
+        "streak": streak
+    }

@@ -9,4 +9,5 @@ class Punishment(Base):
     task_id = Column(Integer, ForeignKey("deadlines.id"), nullable = True)
     title = Column(String(200), nullable = False)
     status = Column(String(10), nullable = False)
+    category = Column(String(50), nullable = True)
     

@@ -4,6 +4,8 @@ let state = {
     currentUser: null,
     partnerId: null,
     partnerName: null, // New field for personalization
+    myActivity: null,
+    partnerActivity: null,
     tasks: [],
     punishments: []
 };
@@ -162,7 +164,8 @@ const fetchPunishments = async () => {
                 assignerId: state.partnerId,
                 title: p.title,
                 taskId: p.task_id, 
-                status: p.status
+                status: p.status,
+                category: p.category
             })),
             ...partnerPuns.map(p => ({
                 id: p.id,
@@ -170,7 +173,8 @@ const fetchPunishments = async () => {
                 assignerId: state.currentUser.id,
                 title: p.title,
                 taskId: p.task_id,
-                status: p.status
+                status: p.status,
+                category: p.category
             }))
         ];
 
@@ -217,8 +221,79 @@ const enterDashboard = async () => {
     startDeadlineChecker();
     fetchTasks();
     fetchPunishments();
+    fetchActivity();
     renderDashboard();
+    
+    // Start activity polling
+    startActivityPolling();
 };
+
+const fetchActivity = async () => {
+    if (!state.currentUser) return;
+    try {
+        const fetchMe = fetch(`${API_BASE}/users/${state.currentUser.id}/activity`).then(r => r.json());
+        let fetches = [fetchMe];
+        if (state.partnerId) {
+            fetches.push(fetch(`${API_BASE}/users/${state.partnerId}/activity`).then(r => r.json()));
+        }
+        
+        const results = await Promise.all(fetches);
+        state.myActivity = results[0];
+        if (results.length > 1) state.partnerActivity = results[1];
+        
+        const myActivity = state.myActivity;
+        
+        // Update my UI
+        document.getElementById('my-streak-count').innerText = `${myActivity.streak} Day Streak`;
+        
+        if (myActivity.is_active) {
+            document.getElementById('my-status-text').innerText = "Currently Studying";
+            document.getElementById('my-status-indicator').className = "status-dot active";
+        } else {
+            document.getElementById('my-status-text').innerText = "Offline";
+            document.getElementById('my-status-indicator').className = "status-dot offline";
+        }
+        
+        // Update partner UI
+        if (state.partnerId && results[1]) {
+            const partnerActivity = results[1];
+            document.getElementById('partner-streak-count').innerText = `${partnerActivity.streak} Day Streak`;
+            
+            if (partnerActivity.is_active) {
+                document.getElementById('partner-status-text').innerText = "Currently Studying";
+                document.getElementById('partner-status-indicator').className = "status-dot active";
+                document.getElementById('partner-status-dot').classList.remove('display-none');
+            } else {
+                document.getElementById('partner-status-text').innerText = "Offline";
+                document.getElementById('partner-status-indicator').className = "status-dot offline";
+                document.getElementById('partner-status-dot').classList.add('display-none');
+            }
+        }
+    } catch (err) {
+        console.error("Error fetching activity:", err);
+    }
+};
+
+const startActivityPolling = () => {
+    if (window.activityInterval) clearInterval(window.activityInterval);
+    
+    // Ping my activity immediately
+    fetch(`${API_BASE}/users/${state.currentUser.id}/ping`, { method: 'POST' }).catch(e => console.error(e));
+    
+    window.activityInterval = setInterval(() => {
+        if (!state.currentUser) {
+            clearInterval(window.activityInterval);
+            return;
+        }
+        
+        // Ping to mark as active
+        fetch(`${API_BASE}/users/${state.currentUser.id}/ping`, { method: 'POST' }).catch(e => console.error(e));
+        
+        // Fetch statuses
+        fetchActivity();
+    }, 60000); // every 1 min
+};
+
 
 // --- AUTH & LINKING ---
 
@@ -599,6 +674,7 @@ document.getElementById('form-assign-punish').addEventListener('submit', async (
 
     const title = document.getElementById('p-title').value;
     const taskId = document.getElementById('p-task-id').value;
+    const category = document.getElementById('p-category').value;
 
     try {
         const res = await fetch(`${API_BASE}/punishment/`, {
@@ -608,7 +684,8 @@ document.getElementById('form-assign-punish').addEventListener('submit', async (
                 user_id: state.partnerId,
                 task_id: (taskId && !isNaN(taskId)) ? parseInt(taskId) : null, // Send real DB ID if available
                 title: title,
-                status: 'assigned'
+                status: 'assigned',
+                category: category
             })
         });
 
@@ -622,7 +699,8 @@ document.getElementById('form-assign-punish').addEventListener('submit', async (
             assignerId: state.currentUser.id,
             title: title,
             taskId: taskId,
-            status: 'assigned'
+            status: 'assigned',
+            category: category
         });
 
         savePunishments();
@@ -667,8 +745,12 @@ const renderDashboard = () => {
     
     const myIcon = document.getElementById('my-player-icon');
     const partnerIcon = document.getElementById('partner-player-icon');
-    if (myIcon) myIcon.innerHTML = `${myInitial}<div class="pulsing-dot" id="my-status-dot"></div>`;
-    if (partnerIcon) partnerIcon.innerHTML = `${partnerInitial}<div class="pulsing-dot display-none" id="partner-status-dot"></div>`;
+    
+    const myDotClass = (state.myActivity && state.myActivity.is_active) ? 'pulsing-dot' : 'pulsing-dot display-none';
+    const partnerDotClass = (state.partnerActivity && state.partnerActivity.is_active) ? 'pulsing-dot' : 'pulsing-dot display-none';
+
+    if (myIcon) myIcon.innerHTML = `${myInitial}<div class="${myDotClass}" id="my-status-dot"></div>`;
+    if (partnerIcon) partnerIcon.innerHTML = `${partnerInitial}<div class="${partnerDotClass}" id="partner-status-dot"></div>`;
 
     myBoardTitle.innerText = `${myName}'s Tracker`;
     document.getElementById('partner-board-title').innerText = `${partnerName}'s Tracker`;
@@ -814,10 +896,15 @@ const renderDashboard = () => {
         const statusLabel = p.status === 'completed'
             ? `<span style="color:var(--hud-green)">Completed</span>`
             : `<span style="color:#555">Active</span>`;
+            
+        const catLabel = p.category ? `<span style="font-size:0.6rem; padding: 2px 6px; border-radius: 4px; background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.4); text-transform: uppercase;">${p.category}</span>` : '';
 
         div.innerHTML = `
             <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
-                <span style="color:var(--hud-red); font-weight:700; font-size:0.8rem;">! ${p.title}</span>
+                <div style="display:flex; align-items:center; gap: 8px;">
+                    <span style="color:var(--hud-red); font-weight:700; font-size:0.8rem;">! ${p.title}</span>
+                    ${catLabel}
+                </div>
                 <div style="display:flex; align-items:center; gap:10px;">
                     ${statusLabel}
                     ${actionBtn}
