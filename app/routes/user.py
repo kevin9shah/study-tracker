@@ -106,7 +106,7 @@ def get_user_activity(user_id: int, db: Session = Depends(get_db)):
     is_active = False
     if user.last_active:
         time_diff = datetime.utcnow() - user.last_active
-        is_active = time_diff.total_seconds() <= 300 # 5 minutes
+        is_active = abs(time_diff.total_seconds()) <= 300 # 5 minutes
         
     return {
         "last_active": user.last_active,
