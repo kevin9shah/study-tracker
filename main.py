@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.databases import engine, Base
-from app.routes import user, subject, chapter, progress, deadline, punishment, couple
+from app.routes import user, subject, chapter, progress, deadline, punishment, couple, reward, daily_image
 
 app = FastAPI()
 
@@ -38,6 +38,7 @@ def run_migrations():
             conn.execute(text("ALTER TABLE punishments ADD COLUMN IF NOT EXISTS task_id INTEGER REFERENCES deadlines(id)"))
             conn.execute(text("ALTER TABLE punishments ADD COLUMN IF NOT EXISTS category VARCHAR(50)"))
             conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP"))
+            conn.execute(text("ALTER TABLE deadlines ADD COLUMN IF NOT EXISTS secret_message VARCHAR(500)"))
             print("Migration successful!")
         except Exception as e:
             print(f"Migration notice (already applied or error): {e}")
@@ -50,6 +51,8 @@ app.include_router(progress.router)
 app.include_router(deadline.router)
 app.include_router(punishment.router)
 app.include_router(couple.router)
+app.include_router(reward.router)
+app.include_router(daily_image.router)
 
 # Routes
 @app.get("/")

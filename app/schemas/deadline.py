@@ -6,3 +6,4 @@ class DeadlineCreate(BaseModel):
     chapter_id : int
     deadline_time : datetime
     status : str
+    secret_message: str | None = None

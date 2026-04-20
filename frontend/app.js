@@ -7,7 +7,8 @@ let state = {
     myActivity: null,
     partnerActivity: null,
     tasks: [],
-    punishments: []
+    punishments: [],
+    rewards: []
 };
 
 // INITIALIZATION
@@ -47,6 +48,9 @@ const loadLocalState = () => {
     const pun = localStorage.getItem('studyLinkPunishments');
     if (pun) state.punishments = JSON.parse(pun);
 
+    const rew = localStorage.getItem('studyLinkRewards');
+    if (rew) state.rewards = JSON.parse(rew);
+
     const pName = localStorage.getItem('studyLinkPartnerName');
     if (pName) state.partnerName = pName;
 
@@ -59,6 +63,7 @@ const loadLocalState = () => {
     if (state.currentUser) {
         fetchTasks();
         fetchPunishments();
+        fetchRewards();
     }
 
     // Auto-poll if we are stuck on the setup/couple page without a partner
@@ -104,7 +109,8 @@ const fetchTasks = async () => {
                 chapNum: t.chapter_number,
                 chapName: t.chapter_name || `Chapter ${t.chapter_number}`,
                 deadline: t.deadline_time,
-                status: status
+                status: status,
+                secretMessage: t.secret_message
             };
         };
 
@@ -186,8 +192,31 @@ const fetchPunishments = async () => {
     }
 };
 
+const fetchRewards = async () => {
+    if (!state.currentUser || !state.partnerId) return;
+    try {
+        const [res1, res2] = await Promise.all([
+            fetch(`${API_BASE}/reward/${state.currentUser.id}`),
+            fetch(`${API_BASE}/reward/${state.partnerId}`)
+        ]);
+        
+        const myRews = await res1.json();
+        const partnerRews = await res2.json();
+
+        state.rewards = [
+            ...myRews.map(r => ({ ...r, receiverId: state.currentUser.id })),
+            ...partnerRews.map(r => ({ ...r, receiverId: state.partnerId }))
+        ];
+        saveRewards();
+        renderDashboard();
+    } catch (err) {
+        console.error("Error fetching rewards:", err);
+    }
+};
+
 const saveTasks = () => localStorage.setItem('studyLinkTasks', JSON.stringify(state.tasks));
 const savePunishments = () => localStorage.setItem('studyLinkPunishments', JSON.stringify(state.punishments));
+const saveRewards = () => localStorage.setItem('studyLinkRewards', JSON.stringify(state.rewards));
 
 const showMsg = (elId, msg, isError = false) => {
     const el = document.getElementById(elId);
@@ -221,8 +250,10 @@ const enterDashboard = async () => {
     startDeadlineChecker();
     fetchTasks();
     fetchPunishments();
+    fetchRewards();
     fetchActivity();
     renderDashboard();
+    fetchDailyImage();
     
     // Start activity polling
     startActivityPolling();
@@ -500,6 +531,7 @@ const logoutFunction = () => {
     localStorage.removeItem('studyLinkPartnerName');
     localStorage.removeItem('studyLinkTasks');
     localStorage.removeItem('studyLinkPunishments');
+    localStorage.removeItem('studyLinkRewards');
     location.reload();
 };
 
@@ -522,6 +554,7 @@ document.getElementById('btn-delete-couple').addEventListener('click', async () 
             localStorage.removeItem('studyLinkPartnerName');
             localStorage.removeItem('studyLinkTasks');
             localStorage.removeItem('studyLinkPunishments');
+            localStorage.removeItem('studyLinkRewards');
             state.partnerId = null;
             state.partnerName = null;
             location.reload();
@@ -544,6 +577,7 @@ document.getElementById('form-task').addEventListener('submit', async (e) => {
     const tChapNum = parseInt(document.getElementById('t-chap-num').value);
     const tChapName = document.getElementById('t-chap-name').value;
     const tDeadline = new Date(document.getElementById('t-deadline').value);
+    const tSecret = document.getElementById('t-secret') ? document.getElementById('t-secret').value : null;
 
     // Call Backend (we fire and forget to satisfy backend tracking)
     try {
@@ -573,9 +607,12 @@ document.getElementById('form-task').addEventListener('submit', async (e) => {
 
         // 3. Deadline
         const localDeadline = document.getElementById('t-deadline').value; // Keep local string to avoid UTC shifts
+        let deadlinePayload = { user_id: state.currentUser.id, chapter_id: chapId, deadline_time: localDeadline, status: 'pending' };
+        if (tSecret) deadlinePayload.secret_message = tSecret;
+
         let resDeadline = await fetch(`${API_BASE}/deadline/`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: state.currentUser.id, chapter_id: chapId, deadline_time: localDeadline, status: 'pending' })
+            body: JSON.stringify(deadlinePayload)
         });
         if (!resDeadline.ok) {
             const err = await resDeadline.json();
@@ -593,7 +630,8 @@ document.getElementById('form-task').addEventListener('submit', async (e) => {
             chapNum: tChapNum,
             chapName: tChapName,
             deadline: localDeadline,
-            status: 'pending'
+            status: 'pending',
+            secretMessage: tSecret
         };
         state.tasks.push(task);
         saveTasks();
@@ -737,6 +775,60 @@ document.getElementById('form-assign-punish').addEventListener('submit', async (
     }
 });
 
+// --- REWARD LOGIC ---
+const assignReward = async (title) => {
+    try {
+        const res = await fetch(`${API_BASE}/reward/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: state.partnerId,
+                assigner_id: state.currentUser.id,
+                title: title,
+                status: 'assigned'
+            })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Error assigning reward");
+
+        state.rewards.push({
+            id: data.id,
+            receiverId: state.partnerId,
+            assigner_id: state.currentUser.id,
+            title: title,
+            status: 'assigned'
+        });
+
+        saveRewards();
+        renderDashboard();
+    } catch (err) {
+        alert("Error: " + err.message);
+    }
+};
+
+const toggleReward = async (id, newStatus) => {
+    const r = state.rewards.find(x => String(x.id) === String(id));
+    if (!r) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/reward/redeem`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: r.id, status: newStatus })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Update failed");
+
+        r.status = newStatus;
+        saveRewards();
+        renderDashboard();
+    } catch (err) {
+        console.error(err);
+        alert(err.message);
+    }
+};
+
 // --- RENDER ENGINE ---
 
 const renderDashboard = () => {
@@ -800,6 +892,11 @@ const renderDashboard = () => {
     myMissedBody.innerHTML = ''; partnerMissedBody.innerHTML = '';
     myPunishmentsBody.innerHTML = ''; partnerPunishsmentBody.innerHTML = '';
 
+    const myRewardBody = document.getElementById('my-reward-list');
+    const partnerRewardBody = document.getElementById('partner-reward-list');
+    if (myRewardBody) myRewardBody.innerHTML = '';
+    if (partnerRewardBody) partnerRewardBody.innerHTML = '';
+
     let myAnyCompleted = false;
     let partnerAnyCompleted = false;
 
@@ -823,6 +920,21 @@ const renderDashboard = () => {
     document.getElementById('partner-progress-bar').style.width = `${partnerPercent}%`;
     document.getElementById('partner-progress-text').innerText = `${partnerPercent}%`;
 
+    // Handle Daily Mystery Unlock
+    if (myPercent === 100 && state.partnerId) {
+        const pImg = document.getElementById('partner-mystery-img');
+        if (pImg && pImg.dataset.id && pImg.style.filter !== 'none') {
+            fetch(`${API_BASE}/daily_image/unlock`, {
+                method: "PATCH",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({id: pImg.dataset.id, is_unlocked: true})
+            }).then(() => {
+                pImg.style.filter = 'none';
+                document.getElementById('partner-mystery-lock').style.display = 'none';
+            }).catch(e => console.error(e));
+        }
+    }
+
     // Sort tasks
     state.tasks.forEach(t => {
         const dStr = new Date(t.deadline).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -840,11 +952,13 @@ const renderDashboard = () => {
             const ck = isMe ? `<input type="checkbox" class="task-checkbox" ${t.status === 'completed' ? 'checked' : ''} onchange="toggleTaskStatus('${t.id}', this.checked)">` : (t.status === 'completed' ? 'Done' : 'Pending');
             
             const deleteBtn = isMe ? `<button class="danger-btn" style="padding:0.4rem 0.6rem; font-size:0.8rem;" onclick="deleteTask(${t.id})">Delete</button>` : '';
+            
+            const secretHtml = (t.status === 'completed' && t.secretMessage) ? `<div style="font-size:0.75rem; color:#ec4899; margin-top:4px;">💌 ${t.secretMessage}</div>` : (t.status === 'pending' && t.secretMessage) ? `<div style="font-size:0.75rem; color:#888; margin-top:4px;">🔒 Secret Note Hidden</div>` : '';
 
             tr.innerHTML = `
                 <td>${ck}</td>
                 <td>${t.subject}</td>
-                <td>Ch.${t.chapNum}: ${t.chapName}</td>
+                <td>Ch.${t.chapNum}: ${t.chapName} ${secretHtml}</td>
                 <td>${dStr}</td>
                 <td>${deleteBtn}</td>
             `;
@@ -940,9 +1054,41 @@ const renderDashboard = () => {
         else partnerPunishsmentBody.appendChild(div);
     });
 
+    state.rewards.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        
+        const isMine = String(r.receiverId) === String(state.currentUser.id);
+        
+        let actionBtn = "";
+        
+        if (isMine && r.status === 'assigned') {
+            actionBtn = `<button class="hud-success-btn" style="padding:4px 8px; font-size:0.7rem; width:auto; background: #ec4899; box-shadow: 0 0 10px #ec4899; border:none;" onclick="toggleReward(${r.id}, 'redeemed')">Redeem</button>`;
+        } else if (r.status === 'redeemed') {
+            actionBtn = `<span style="color:#ec4899; font-size: 0.8rem; font-weight:bold;">Redeemed ✨</span>`;
+        } else if (!isMine && r.status === 'assigned') {
+            actionBtn = `<span style="color:#555; font-size: 0.8rem;">Waiting for partner</span>`;
+        }
+
+        div.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:4px; flex:1;">
+                <div style="display:flex; align-items:center; gap: 8px;">
+                    <span style="color:#ec4899; font-weight:700; font-size:0.8rem;">🎁 ${r.title}</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    ${actionBtn}
+                </div>
+            </div>
+        `;
+        
+        if (isMine && myRewardBody) myRewardBody.appendChild(div);
+        else if (partnerRewardBody) partnerRewardBody.appendChild(div);
+    });
+
     if (myMissedBody.innerHTML === '') myMissedBody.innerHTML = `<p class="small-text">No missed deadlines! Keep it up.</p>`;
-    if (partnerMissedBody.innerHTML === '')
-        partnerMissedBody.innerHTML = `<p class="small-text">No missed deadlines.</p>`;
+    if (partnerMissedBody.innerHTML === '') partnerMissedBody.innerHTML = `<p class="small-text">No missed deadlines.</p>`;
+    if (myRewardBody && myRewardBody.innerHTML === '') myRewardBody.innerHTML = `<p class="small-text">No rewards yet.</p>`;
+    if (partnerRewardBody && partnerRewardBody.innerHTML === '') partnerRewardBody.innerHTML = `<p class="small-text" style="color:#555">No rewards assigned.</p>`;
 };
 
 // Check for misses every minute
@@ -1030,3 +1176,75 @@ document.addEventListener("mouseover", (e) => {
         cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
     }
 });
+
+// --- NEW FEATURES LISTENERS ---
+const btnAddReward = document.getElementById('btn-add-reward');
+if (btnAddReward) {
+    btnAddReward.addEventListener('click', () => {
+        document.getElementById('modal-reward').style.display = 'flex';
+    });
+}
+
+const formReward = document.getElementById('form-reward');
+if (formReward) {
+    formReward.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('r-title').value;
+        await assignReward(title);
+        document.getElementById('modal-reward').style.display = 'none';
+        e.target.reset();
+    });
+}
+
+const fetchDailyImage = async () => {
+    if (!state.currentUser) return;
+    try {
+        const res = await fetch(`${API_BASE}/daily_image/${state.currentUser.id}`);
+        if(res.ok) {
+            const data = await res.json();
+            const pImg = document.getElementById('partner-mystery-img');
+            if (pImg) {
+                pImg.src = data.image_data;
+                pImg.style.display = 'block';
+                if (data.is_unlocked) {
+                    pImg.style.filter = 'none';
+                    document.getElementById('partner-mystery-lock').style.display = 'none';
+                } else {
+                    pImg.style.filter = 'blur(25px)';
+                    document.getElementById('partner-mystery-lock').style.display = 'flex';
+                    pImg.dataset.id = data.id;
+                }
+            }
+        }
+    } catch (e) { console.log("No daily image"); }
+};
+
+const btnUploadMystery = document.getElementById('btn-upload-mystery');
+if (btnUploadMystery) {
+    btnUploadMystery.addEventListener('click', async () => {
+        const file = document.getElementById('mystery-file').files[0];
+        if (!file) return alert("Select an image first!");
+        
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const baseString = e.target.result;
+            try {
+                const res = await fetch(`${API_BASE}/daily_image/`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        uploader_id: state.currentUser.id,
+                        receiver_id: state.partnerId,
+                        image_data: baseString
+                    })
+                });
+                if(!res.ok) throw new Error("Upload failed.");
+                alert("Image uploaded for partner!");
+            } catch(err) {
+                alert("Upload failed.");
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+}
+

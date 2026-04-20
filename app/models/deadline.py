@@ -10,4 +10,5 @@ class Deadline(Base):
 
     deadline_time = Column(DateTime, nullable=False)
     status = Column(String(50))
+    secret_message = Column(String(500), nullable=True)
     created_at = Column(DateTime,default = datetime.utcnow)

@@ -112,4 +112,4 @@ def get_user_activity(user_id: int, db: Session = Depends(get_db)):
         "last_active": user.last_active,
         "is_active": is_active,
         "streak": streak
-    }
+    } 

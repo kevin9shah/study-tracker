@@ -100,6 +100,7 @@
                 </div>
             </div>
             <div class="bar-right">
+                <button id="btn-add-reward" class="hud-ctrl-btn custom-pink" style="border-color: #ec4899; color: #ec4899;">+ Reward</button>
                 <button id="btn-add-task" class="hud-ctrl-btn blue">+ New Task</button>
                 <button id="btn-delete-couple" class="hud-ctrl-btn red">Unpair</button>
                 <button id="btn-logout" class="hud-ctrl-btn">Logout</button>
@@ -149,6 +150,19 @@
                             <label id="my-punishment-title">Active Punishments</label>
                             <div id="my-punishment-list" class="mini-hud-list"></div>
                         </div>
+                        <div class="stat-box">
+                            <label id="my-reward-title">My Rewards</label>
+                            <div id="my-reward-list" class="mini-hud-list"></div>
+                        </div>
+                    </div>
+                    <div class="stat-boxes" style="margin-top:20px;">
+                        <div class="stat-box daily-mystery-box" style="grid-column: span 2;">
+                            <label>Daily Mystery Photo Upload</label>
+                            <div class="hud-row" style="align-items: center; gap: 10px; margin-top:10px;">
+                                <input type="file" id="mystery-file" accept="image/*" style="font-size: 0.8rem; color: #aaa;">
+                                <button id="btn-upload-mystery" class="hud-secondary-btn" style="padding: 5px 15px; width: auto;">Upload for Partner</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -194,6 +208,22 @@
                             <label id="partner-punishment-title">Assigned Punishments</label>
                             <div id="partner-punishment-list" class="mini-hud-list"></div>
                         </div>
+                        <div class="stat-box">
+                            <label id="partner-reward-title">Partner Rewards</label>
+                            <div id="partner-reward-list" class="mini-hud-list"></div>
+                        </div>
+                    </div>
+                    <div class="stat-boxes" style="margin-top:20px;">
+                        <div class="stat-box daily-mystery-box" style="grid-column: span 2;">
+                            <label>Daily Mystery Photo</label>
+                            <div id="partner-mystery-container" style="position:relative; width: 100%; height: 200px; border-radius: 8px; overflow: hidden; background: rgba(0,0,0,0.3); margin-top:10px; display:flex; align-items:center; justify-content:center;">
+                                <img id="partner-mystery-img" src="" style="width: 100%; height: 100%; object-fit: cover; filter: blur(25px); transition: filter 1s ease;" />
+                                <div id="partner-mystery-lock" style="position:absolute; color: white; font-weight: bold; font-size: 1.1rem; text-shadow: 0px 0px 10px rgba(0,0,0,0.8); display:flex; flex-direction:column; align-items:center;">
+                                    <span style="font-size: 2rem;">🔒</span>
+                                    <span>Complete all tasks to unlock</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -216,6 +246,10 @@
                 <div class="hud-input-group">
                     <label>Deadline</label>
                     <input type="datetime-local" id="t-deadline" required>
+                </div>
+                <div class="hud-input-group">
+                    <label>Secret Love Note 🔒</label>
+                    <input type="text" id="t-secret" placeholder="Unlocked on completion (optional)">
                 </div>
                 <div class="modal-btns">
                     <button type="button" class="hud-text-btn" onclick="document.getElementById('modal-task').style.display='none'">Cancel</button>
@@ -249,6 +283,23 @@
                 <div class="modal-btns">
                     <button type="button" class="hud-text-btn" onclick="document.getElementById('modal-punishment').style.display='none'">Cancel</button>
                     <button type="submit" class="hud-danger-btn" style="width:auto; padding: 10px 20px;">Enforce</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: REWARD -->
+    <div id="modal-reward" class="hud-modal">
+        <div class="modal-card hud-card" style="border: 1px solid #ec4899; box-shadow: 0 0 20px rgba(236,72,153,0.2);">
+            <h2 style="color: #ec4899;">Assign Reward</h2>
+            <form id="form-reward">
+                <div class="hud-input-group">
+                    <label>Reward Detail</label>
+                    <input type="text" id="r-title" placeholder="e.g. 15 Min Massage" required>
+                </div>
+                <div class="modal-btns">
+                    <button type="button" class="hud-text-btn" onclick="document.getElementById('modal-reward').style.display='none'">Cancel</button>
+                    <button type="submit" class="hud-primary-btn" style="width:auto; padding: 10px 20px; background: #ec4899; border: none; box-shadow: 0 0 10px #ec4899;">Send Reward</button>
                 </div>
             </form>
         </div>
