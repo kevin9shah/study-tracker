@@ -39,6 +39,8 @@ def run_migrations():
             conn.execute(text("ALTER TABLE punishments ADD COLUMN IF NOT EXISTS category VARCHAR(50)"))
             conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP"))
             conn.execute(text("ALTER TABLE deadlines ADD COLUMN IF NOT EXISTS secret_message VARCHAR(500)"))
+            conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reward_points INTEGER DEFAULT 0"))
+            conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_reward_date TIMESTAMP"))
             print("Migration successful!")
         except Exception as e:
             print(f"Migration notice (already applied or error): {e}")

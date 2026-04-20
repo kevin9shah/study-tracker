@@ -100,7 +100,7 @@
                 </div>
             </div>
             <div class="bar-right">
-                <button id="btn-add-reward" class="hud-ctrl-btn custom-pink" style="border-color: #ec4899; color: #ec4899;">+ Reward</button>
+                <button id="btn-add-reward" class="hud-ctrl-btn custom-pink" style="border-color: #ec4899; color: #ec4899;">Request Reward (1 Coin)</button>
                 <button id="btn-add-task" class="hud-ctrl-btn blue">+ New Task</button>
                 <button id="btn-delete-couple" class="hud-ctrl-btn red">Unpair</button>
                 <button id="btn-logout" class="hud-ctrl-btn">Logout</button>
@@ -114,7 +114,7 @@
                     <div class="player-icon" id="my-player-icon">M<div class="pulsing-dot" id="my-status-dot"></div></div>
                     <div class="player-info">
                         <h2 id="my-board-title">My Dashboard</h2>
-                        <div class="streak-subtitle"><span class="status-dot offline" id="my-status-indicator"></span><span id="my-status-text">Offline</span> • <span id="my-streak-count" class="streak-count">0 Day Streak</span></div>
+                        <div class="streak-subtitle"><span class="status-dot offline" id="my-status-indicator"></span><span id="my-status-text">Offline</span> • <span id="my-streak-count" class="streak-count">0 Day Streak</span> • <span id="my-points-count" class="points-count" style="color: #fbbf24; font-weight: bold;">🪙 0 Points</span></div>
                         <div class="health-bar-container">
                             <label>COMPLETION</label>
                             <div class="hb-bg"><div id="my-progress-bar" class="hb-fill blue"></div></div>
@@ -173,7 +173,7 @@
                     <div class="player-icon partner" id="partner-player-icon">P<div class="pulsing-dot display-none" id="partner-status-dot"></div></div>
                     <div class="player-info">
                         <h2 id="partner-board-title">Partner Dashboard</h2>
-                        <div class="streak-subtitle"><span class="status-dot offline" id="partner-status-indicator"></span><span id="partner-status-text">Offline</span> • <span id="partner-streak-count" class="streak-count">0 Day Streak</span></div>
+                        <div class="streak-subtitle"><span class="status-dot offline" id="partner-status-indicator"></span><span id="partner-status-text">Offline</span> • <span id="partner-streak-count" class="streak-count">0 Day Streak</span> • <span id="partner-points-count" class="points-count" style="color: #fbbf24; font-weight: bold;">🪙 0 Points</span></div>
                         <div class="health-bar-container">
                             <label>COMPLETION</label>
                             <div class="hb-bg"><div id="partner-progress-bar" class="hb-fill red"></div></div>
@@ -219,7 +219,7 @@
                             <div id="partner-mystery-container" style="position:relative; width: 100%; height: 200px; border-radius: 8px; overflow: hidden; background: rgba(0,0,0,0.3); margin-top:10px; display:flex; align-items:center; justify-content:center;">
                                 <img id="partner-mystery-img" src="" style="width: 100%; height: 100%; object-fit: cover; filter: blur(25px); transition: filter 1s ease;" />
                                 <div id="partner-mystery-lock" style="position:absolute; color: white; font-weight: bold; font-size: 1.1rem; text-shadow: 0px 0px 10px rgba(0,0,0,0.8); display:flex; flex-direction:column; align-items:center;">
-                                    <span style="font-size: 2rem;">🔒</span>
+                                    <span style="font-size: 2rem;"></span>
                                     <span>Complete all tasks to unlock</span>
                                 </div>
                             </div>
@@ -248,7 +248,7 @@
                     <input type="datetime-local" id="t-deadline" required>
                 </div>
                 <div class="hud-input-group">
-                    <label>Secret Love Note 🔒</label>
+                    <label>Secret Love Note </label>
                     <input type="text" id="t-secret" placeholder="Unlocked on completion (optional)">
                 </div>
                 <div class="modal-btns">

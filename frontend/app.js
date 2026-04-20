@@ -276,6 +276,7 @@ const fetchActivity = async () => {
         
         // Update my UI
         document.getElementById('my-streak-count').innerText = `${myActivity.streak} Day Streak`;
+        document.getElementById('my-points-count').innerText = `${myActivity.reward_points || 0} Points`;
         
         if (myActivity.is_active) {
             document.getElementById('my-status-text').innerText = "Currently Studying";
@@ -292,6 +293,7 @@ const fetchActivity = async () => {
         if (state.partnerId && results[1]) {
             const partnerActivity = results[1];
             document.getElementById('partner-streak-count').innerText = `${partnerActivity.streak} Day Streak`;
+            document.getElementById('partner-points-count').innerText = `🪙 ${partnerActivity.reward_points || 0} Points`;
             
             if (partnerActivity.is_active) {
                 document.getElementById('partner-status-text').innerText = "Currently Studying";
@@ -802,8 +804,26 @@ const assignReward = async (title) => {
 
         saveRewards();
         renderDashboard();
+        fetchActivity(); // Refresh points after spending
     } catch (err) {
         alert("Error: " + err.message);
+    }
+};
+
+const claimDailyPoint = async () => {
+    if (!state.currentUser || state.dailyPointClaimedToday) return;
+    try {
+        const res = await fetch(`${API_BASE}/users/${state.currentUser.id}/claim_daily`, {
+            method: 'POST'
+        });
+        const data = await res.json();
+        if (res.ok) {
+            state.dailyPointClaimedToday = true;
+            fetchActivity(); // Refresh points display
+            alert("✨ Achievement Unlocked: 100% Completion! You earned 1 Reward Point!");
+        }
+    } catch (e) {
+        console.error("Daily point already claimed or error:", e);
     }
 };
 
@@ -920,7 +940,7 @@ const renderDashboard = () => {
     document.getElementById('partner-progress-bar').style.width = `${partnerPercent}%`;
     document.getElementById('partner-progress-text').innerText = `${partnerPercent}%`;
 
-    // Handle Daily Mystery Unlock
+    // Handle Daily Mystery Unlock (if partner uploaded)
     if (myPercent === 100 && state.partnerId) {
         const pImg = document.getElementById('partner-mystery-img');
         if (pImg && pImg.dataset.id && pImg.style.filter !== 'none') {
@@ -933,6 +953,11 @@ const renderDashboard = () => {
                 document.getElementById('partner-mystery-lock').style.display = 'none';
             }).catch(e => console.error(e));
         }
+    }
+
+    // Handle Earning Reward Point at 100%
+    if (myPercent === 100) {
+        claimDailyPoint();
     }
 
     // Sort tasks
@@ -953,7 +978,7 @@ const renderDashboard = () => {
             
             const deleteBtn = isMe ? `<button class="danger-btn" style="padding:0.4rem 0.6rem; font-size:0.8rem;" onclick="deleteTask(${t.id})">Delete</button>` : '';
             
-            const secretHtml = (t.status === 'completed' && t.secretMessage) ? `<div style="font-size:0.75rem; color:#ec4899; margin-top:4px;">💌 ${t.secretMessage}</div>` : (t.status === 'pending' && t.secretMessage) ? `<div style="font-size:0.75rem; color:#888; margin-top:4px;">🔒 Secret Note Hidden</div>` : '';
+            const secretHtml = (t.status === 'completed' && t.secretMessage) ? `<div style="font-size:0.75rem; color:#ec4899; margin-top:4px;">💌 ${t.secretMessage}</div>` : (t.status === 'pending' && t.secretMessage) ? `<div style="font-size:0.75rem; color:#888; margin-top:4px;"> Secret Note Hidden</div>` : '';
 
             tr.innerHTML = `
                 <td>${ck}</td>

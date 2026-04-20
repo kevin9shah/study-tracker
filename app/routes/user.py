@@ -111,5 +111,26 @@ def get_user_activity(user_id: int, db: Session = Depends(get_db)):
     return {
         "last_active": user.last_active,
         "is_active": is_active,
-        "streak": streak
-    } 
+        "streak": streak,
+        "reward_points": user.reward_points or 0
+    }
+
+@router.post("/{user_id}/claim_daily")
+def claim_daily_reward(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    from datetime import datetime
+    now = datetime.utcnow()
+    
+    # Check if claimed today
+    if user.last_reward_date:
+        if user.last_reward_date.date() == now.date():
+            raise HTTPException(status_code=400, detail="Daily reward already claimed today.")
+            
+    user.reward_points = (user.reward_points or 0) + 1
+    user.last_reward_date = now
+    db.commit()
+    db.refresh(user)
+    return {"message": "Success", "points": user.reward_points}

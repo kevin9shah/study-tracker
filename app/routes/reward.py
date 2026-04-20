@@ -3,11 +3,23 @@ from sqlalchemy.orm import Session
 from app.db.databases import get_db
 from app.models.reward import Reward
 from app.schemas.reward import RewardCreate, RewardUpdate
+from app.models.user import User
 
 router = APIRouter(prefix="/reward", tags=["Reward"])
 
 @router.post("/")
 def create_reward(reward: RewardCreate, db: Session = Depends(get_db)):
+    # The user_id is the one requesting/earning the reward, so they spend the point.
+    user = db.query(User).filter(User.id == reward.user_id).first()
+    if not user:
+         raise HTTPException(status_code=404, detail="User not found")
+    
+    if (user.reward_points or 0) < 1:
+        raise HTTPException(status_code=400, detail="Not enough reward points. Earn them by completing all tasks!")
+    
+    # Deduct point
+    user.reward_points -= 1
+    
     db_reward = Reward(**reward.dict())
     db.add(db_reward)
     db.commit()

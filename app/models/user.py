@@ -10,3 +10,5 @@ class User(Base):
     email = Column(String(100), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     last_active = Column(DateTime, default=datetime.utcnow)
+    reward_points = Column(Integer, default=0)
+    last_reward_date = Column(DateTime, nullable=True)
