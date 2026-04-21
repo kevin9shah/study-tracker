@@ -26,7 +26,7 @@ def get_daily_image(receiver_id: int, db: Session = Depends(get_db)):
     ).order_by(desc(DailyImage.created_at)).first()
     
     if not image:
-        raise HTTPException(status_code=404, detail="No image found for today")
+        return None
     return image
 
 @router.get("/uploader/{uploader_id}")
@@ -38,7 +38,7 @@ def get_uploaded_image(uploader_id: int, db: Session = Depends(get_db)):
     ).order_by(desc(DailyImage.created_at)).first()
     
     if not image:
-        raise HTTPException(status_code=404, detail="No image found for today")
+        return None
     return image
 
 @router.patch("/unlock")

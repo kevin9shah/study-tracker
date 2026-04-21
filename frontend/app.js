@@ -845,9 +845,12 @@ const claimDailyPoint = async () => {
             state.dailyPointClaimedToday = true;
             fetchActivity(); // Refresh points display
             alert("✨ Achievement Unlocked: 100% Completion! You earned 1 Reward Point!");
+        } else if (res.status === 400 && data.detail.includes("already claimed")) {
+            state.dailyPointClaimedToday = true; // Mark as claimed locally to stop trying
+            console.log("Daily point already claimed today.");
         }
     } catch (e) {
-        console.error("Daily point already claimed or error:", e);
+        console.warn("Error claiming daily point:", e);
     }
 };
 
@@ -1398,7 +1401,9 @@ const fetchDailyImage = async () => {
         if(res.ok) {
             const data = await res.json();
             const pImg = document.getElementById('partner-mystery-img');
-            if (pImg) {
+            const lock = document.getElementById('partner-mystery-lock');
+
+            if (data && pImg) {
                 pImg.src = data.image_data;
                 pImg.style.display = 'block';
                 if (data.is_unlocked) {
@@ -1407,15 +1412,11 @@ const fetchDailyImage = async () => {
                     pImg.style.filter = 'blur(25px)';
                     pImg.dataset.id = data.id;
                 }
+                if (lock) lock.style.display = (data.is_unlocked ? 'none' : 'flex');
+            } else {
+                if (pImg) pImg.style.display = 'none';
+                if (lock) lock.style.display = 'none';
             }
-            const lock = document.getElementById('partner-mystery-lock');
-            if (lock) lock.style.display = (data.is_unlocked ? 'none' : 'flex');
-        } else {
-            // No image today, hide it
-            const pImg = document.getElementById('partner-mystery-img');
-            if (pImg) pImg.style.display = 'none';
-            const lock = document.getElementById('partner-mystery-lock');
-            if (lock) lock.style.display = 'none';
         }
     } catch (e) { 
         console.log("No daily image for me today");
@@ -1429,17 +1430,39 @@ const fetchDailyImage = async () => {
         
         if(res.ok) {
             const data = await res.json();
-            if (myPreview && myImg) {
+            if (data && myPreview && myImg) {
                 myImg.src = data.image_data;
                 myPreview.classList.remove('display-none');
+            } else {
+                if (myPreview) myPreview.classList.add('display-none');
             }
-        } else {
-            // No image today, hide preview
-            if (myPreview) myPreview.classList.add('display-none');
         }
     } catch (e) { 
         console.log("No daily image uploaded by me today"); 
     }
+};
+
+const compressImage = async (base64Str, maxWidth = 1000, quality = 0.6) => {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+                height = (maxWidth / width) * height;
+                width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+    });
 };
 
 const btnUploadMystery = document.getElementById('btn-upload-mystery');
@@ -1450,7 +1473,9 @@ if (btnUploadMystery) {
         
         const reader = new FileReader();
         reader.onload = async (e) => {
-            const baseString = e.target.result;
+            const rawBaseString = e.target.result;
+            const compressedBaseString = await compressImage(rawBaseString);
+            
             try {
                 const res = await fetch(`${API_BASE}/daily_image/`, {
                     method: "POST",
@@ -1458,7 +1483,7 @@ if (btnUploadMystery) {
                     body: JSON.stringify({
                         uploader_id: state.currentUser.id,
                         receiver_id: state.partnerId,
-                        image_data: baseString
+                        image_data: compressedBaseString
                     })
                 });
                 if(!res.ok) throw new Error("Upload failed.");
@@ -1466,7 +1491,8 @@ if (btnUploadMystery) {
                 playSound('photo');
                 fetchDailyImage(); // Refresh my preview
             } catch(err) {
-                alert("Upload failed.");
+                console.error(err);
+                alert("Upload failed. The image might be too large.");
             }
         };
         reader.readAsDataURL(file);
