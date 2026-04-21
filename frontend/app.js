@@ -1214,7 +1214,39 @@ let ringY = mouseY;
 document.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
+    
+    // Spawning trails
+    if (window.isFullySynchronized) {
+        if (Math.random() > 0.7) createHeartTrail(e.clientX, e.clientY);
+    } else {
+        if (Math.random() > 0.8) createCursorParticle(e.clientX, e.clientY);
+    }
 });
+
+const createCursorParticle = (x, y) => {
+    const p = document.createElement('div');
+    p.className = 'cursor-particle';
+    const size = Math.random() * 8 + 4;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 600);
+};
+
+const createHeartTrail = (x, y) => {
+    const h = document.createElement('div');
+    h.className = 'heart-trail';
+    h.innerText = '❤';
+    // Small random offset
+    const ox = (Math.random() - 0.5) * 15;
+    const oy = (Math.random() - 0.5) * 15;
+    h.style.left = (x + ox) + 'px';
+    h.style.top = (y + oy) + 'px';
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 1000);
+};
 
 const renderCursor = () => {
     // Smooth Lerp for ring, instant for dot
